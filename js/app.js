@@ -32,9 +32,9 @@
     const f = five[qIdx];
     $('qCarousel').innerHTML = `
       <div class="card" onclick="go('spirit')" style="cursor:pointer;text-align:center;padding:44px 30px;border-top:4px solid var(--gold);position:relative;overflow:hidden;">
-        <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;box-shadow:0 6px 16px rgba(192,57,43,.3);">${qIdx + 1}</div>
+        <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:46px;height:46px;border-radius:50%;background:var(--red);color:#FFF8EC;display:flex;align-items:center;justify-content:center;font-family:var(--font-num);font-variant-numeric:tabular-nums;font-size:20px;font-weight:700;border:1px solid rgba(240,214,138,.65);box-shadow:0 4px 10px rgba(150,39,28,.28);">${qIdx + 1}</div>
         <div style="margin-top:52px;font-size:13px;color:var(--gold-deep);letter-spacing:6px;">${f.name}</div>
-        <div style="font-size:38px;font-weight:700;color:var(--red-deep);letter-spacing:8px;margin-top:12px;">${f.short}</div>
+        <div style="font-family:var(--font-serif);font-size:38px;font-weight:700;color:var(--red-deep);letter-spacing:8px;margin-top:12px;">${f.short}</div>
         <div style="font-size:14px;color:var(--ink-soft);margin-top:16px;line-height:1.8;max-width:520px;margin-left:auto;margin-right:auto;">${f.essence}</div>
         <div style="margin-top:22px;font-size:12px;color:var(--gold-deep);">点击查看完整回答 →</div>
         <div style="display:flex;justify-content:center;gap:8px;margin-top:18px;">${five.map((_, i) => `<span style="width:${i === qIdx ? 22 : 8}px;height:8px;border-radius:4px;background:${i === qIdx ? 'var(--red)' : 'rgba(42,36,25,.18)'};transition:all .3s;display:inline-block;"></span>`).join('')}</div>
@@ -57,18 +57,25 @@
       <div class="stat-note">${s.note}</div>
     </div>`).join('');
 
+  /* 互动广场：一大两小 + 三小 + 一通栏的不对称编辑式网格，JS 统一渲染 7 个入口 */
   const entries = [
-    { icon: '凿', name: '重走大岩路', desc: '亲手凿通绝壁', go: 'game' },
-    { icon: '问', name: '政绩观五问', desc: '五问五答', go: 'spirit' },
-    { icon: '谱', name: '接力村史', desc: '七任书记', go: 'history' },
-    { icon: '游', name: '看石椅', desc: '六大点位', go: 'tour' },
+    { icon: '凿', name: '重走大岩路', desc: '亲手抡镐凿岩，三年凿出五米宽、三公里的绝壁生路', act: "go('game')", feat: true },
+    { icon: '问', name: '政绩观五问', desc: '五问五答', act: "go('spirit')" },
+    { icon: '谱', name: '接力村史', desc: '七任书记', act: "go('history')" },
+    { icon: '游', name: '看石椅', desc: '六大点位', act: "go('tour')" },
+    { icon: '句', name: '金句海报生成器', desc: '选语录选模板，生成专属海报', act: 'openPoster()' },
+    { icon: '章', name: '云上集章打卡', desc: '六大点位，盖章见证', act: 'openCheckin()' },
+    { icon: '测', name: '情境测评', desc: '24 道抉择，测一测你的政绩观底色', act: 'openQuiz()', wide: true },
   ];
-  $('entryGrid').innerHTML = entries.map((e, i) => `
-    <div class="card entry-card" onclick="go('${e.go}')">
-      <div class="entry-idx">0${i + 1}</div>
-      <div class="entry-icon">${e.icon}</div>
-      <div class="entry-name">${e.name}</div>
-      <div class="entry-desc">${e.desc}</div>
+  $('plazaGrid').innerHTML = entries.map((e, i) => `
+    <div class="plaza-card${e.feat ? ' plaza-feat' : ''}${e.wide ? ' plaza-wide' : ''}" onclick="${e.act}">
+      <div class="plaza-idx">${String(i + 1).padStart(2, '0')}</div>
+      <div class="plaza-icon">${e.icon}</div>
+      <div class="plaza-txt">
+        <div class="plaza-name">${e.name}</div>
+        <div class="plaza-desc">${e.desc}</div>
+      </div>
+      ${e.wide ? '<div class="plaza-go">→</div>' : ''}
     </div>`).join('');
 
   /* ================= 政绩观渲染 ================= */
@@ -89,6 +96,13 @@
   window.toggleQa = i => $('qa' + i).classList.toggle('open');
 
   /* ================= 村史渲染 ================= */
+  /* 首短语强调：截取开头至第一个标点（，。；、：！？）为止的完整短语，
+     如「1962 年，」「父母双亡、」，避免只放大单字造成歧义 */
+  const withFirstPhrase = text => {
+    const m = text.match(/^(.{1,24}?[，。；、：！？])([\s\S]*)$/);
+    if (!m) return text;
+    return `<span class="first-phrase">${m[1]}</span>${m[2]}`;
+  };
   $('leaderList').innerHTML = D.leaders.map(l => `
     <div class="card bio">
       <div class="bio-portrait">
@@ -99,7 +113,7 @@
         <div class="bio-name">${l.name}<span class="bio-keyword">${l.keyword}</span></div>
         <div class="bio-period">任期 · ${l.period}</div>
         <div class="bio-title">${l.title}</div>
-        <div class="bio-story">${l.story}</div>
+        <div class="bio-story">${withFirstPhrase(l.story)}</div>
         ${l.quotes && l.quotes[0] ? `<div class="bio-quote">“${l.quotes[0]}”<b>—— ${l.name}</b></div>` : ''}
       </div>
     </div>`).join('');
