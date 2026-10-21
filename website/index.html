@@ -6,6 +6,7 @@
 <title>石椅答卷 · 政绩观好样本</title>
 <meta name="description" content="六十四年一锤一凿，悬崖上的石椅村凿出正确政绩观的答卷。走进总书记点赞的北川石椅村。">
 <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/features.css">
 </head>
 <body>
 
@@ -51,6 +52,27 @@
 
   <div class="module-title">互动广场</div>
   <div class="entry-grid" id="entryGrid"></div>
+  <!-- 三大互动功能入口（海报 / 集章 / 测评） -->
+  <div class="entry-grid" style="margin-top:16px;">
+    <div class="card entry-card" onclick="openPoster()">
+      <div class="entry-idx">05</div>
+      <div class="entry-icon">句</div>
+      <div class="entry-name">金句海报生成器</div>
+      <div class="entry-desc">选语录选模板，生成专属海报</div>
+    </div>
+    <div class="card entry-card" onclick="openCheckin()">
+      <div class="entry-idx">06</div>
+      <div class="entry-icon">章</div>
+      <div class="entry-name">云上集章打卡</div>
+      <div class="entry-desc">六大点位，盖章见证</div>
+    </div>
+    <div class="card entry-card" onclick="openQuiz()">
+      <div class="entry-idx">07</div>
+      <div class="entry-icon">测</div>
+      <div class="entry-name">情境测评</div>
+      <div class="entry-desc">24 道抉择，测政绩观底色</div>
+    </div>
+  </div>
 </main>
 
 <!-- 政绩观 -->
@@ -161,5 +183,8 @@
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
 <script src="js/app.js"></script>
+<script src="js/features-poster.js"></script>
+<script src="js/features-checkin.js"></script>
+<script src="js/features-quiz.js"></script>
 </body>
 </html>
