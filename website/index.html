@@ -22,8 +22,27 @@
       <button class="nav-tab" data-page="profile">我的接力棒</button>
       <button class="nav-tab" data-page="game">凿大岩路</button>
     </div>
+    <!-- 登录用户区 -->
+    <div id="navUser" style="margin-left:12px;"></div>
   </div>
 </nav>
+
+<!-- 登录/注册弹层 -->
+<div class="modal-mask" id="authMask">
+  <div class="modal-card" style="max-width:380px;">
+    <div class="modal-title" style="text-align:center;">登录 / 注册</div>
+    <p class="note" style="text-align:center;margin-bottom:16px;">登录后政绩值与徽章归属你的账号</p>
+    <input id="authAccount" placeholder="账号 / 邮箱" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
+    <input id="authNick" placeholder="昵称（注册时填）" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
+    <input id="authPwd" type="password" placeholder="密码（至少 6 位）" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
+    <div id="authMsg" style="color:var(--red);font-size:13px;min-height:20px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn" style="flex:1;" onclick="ShiyiAuth.submit('login')">登录</button>
+      <button class="btn btn-ghost" style="flex:1;" onclick="ShiyiAuth.submit('reg')">注册</button>
+    </div>
+    <p class="note" style="text-align:center;margin-top:14px;cursor:pointer;" onclick="ShiyiAuth.hide()">暂不登录，先逛逛 →</p>
+  </div>
+</div>
 
 <!-- 首页 -->
 <main class="page on" id="page-home">
@@ -36,7 +55,9 @@
   </section>
 
   <div class="module-title">政绩观五问</div>
-  <div class="q-marquee"><div class="q-track" id="qTrack"></div></div>
+  <div class="q-carousel" id="qCarousel" style="position:relative;height:300px;">
+    <!-- JS 渲染：五问单卡自动轮播，一次一张 -->
+  </div>
 
   <div class="module-title">政绩的标尺</div>
   <div class="stats-grid" id="statsGrid"></div>
@@ -182,9 +203,11 @@
 
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
+<script src="js/auth.js"></script>
 <script src="js/app.js"></script>
 <script src="js/features-poster.js"></script>
 <script src="js/features-checkin.js"></script>
 <script src="js/features-quiz.js"></script>
+<script>ShiyiAuth.init();</script>
 </body>
 </html>
