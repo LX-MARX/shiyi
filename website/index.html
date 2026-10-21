@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>石椅答卷 · 政绩观好样本</title>
+<meta name="description" content="六十四年一锤一凿，悬崖上的石椅村凿出正确政绩观的答卷。走进总书记点赞的北川石椅村。">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<nav class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo"><span class="logo-badge">石</span>石椅答卷</div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab on" data-page="home">好样子</button>
+      <button class="nav-tab" data-page="spirit">政绩观</button>
+      <button class="nav-tab" data-page="history">接力村史</button>
+      <button class="nav-tab" data-page="tour">看石椅</button>
+      <button class="nav-tab" data-page="profile">我的接力棒</button>
+      <button class="nav-tab" data-page="game">凿大岩路</button>
+    </div>
+  </div>
+</nav>
+
+<!-- 首页 -->
+<main class="page on" id="page-home">
+  <section class="hero">
+    <img class="hero-bg" src="images/hero_village.jpg" alt="石椅村">
+    <div class="hero-mask"></div>
+    <div class="hero-kicker">正确政绩观基层样本 · 北川石椅</div>
+    <div class="hero-main">你们是一个<b>很好的样子</b></div>
+    <div class="hero-sub">习近平总书记 2023 年 1 月 18 日视频连线点赞</div>
+  </section>
+
+  <div class="module-title">政绩观五问</div>
+  <div class="q-marquee"><div class="q-track" id="qTrack"></div></div>
+
+  <div class="module-title">政绩的标尺</div>
+  <div class="stats-grid" id="statsGrid"></div>
+
+  <div class="module-title">大岩路</div>
+  <div class="card road-entry" onclick="go('game')">
+    <div>
+      <div class="road-entry-title">亲手凿一次大岩路</div>
+      <div class="road-entry-desc">一锤一凿，凿出悬崖上的生路</div>
+    </div>
+    <div class="road-arrow">→</div>
+  </div>
+
+  <div class="module-title">互动广场</div>
+  <div class="entry-grid" id="entryGrid"></div>
+</main>
+
+<!-- 政绩观 -->
+<main class="page" id="page-spirit">
+  <div class="ask-hero">
+    <h1>什么是正确的政绩观？</h1>
+    <p>石椅村用六十四年写下五个回答</p>
+  </div>
+  <div class="card def-card">
+    <div class="def-slogan">为人民出政绩，以实干出政绩</div>
+    <div class="def-text">石椅精神，是石椅村党支部六十四年接续奋斗中淬炼出的精神品格，统一于「为人民出政绩、以实干出政绩」。</div>
+  </div>
+  <div class="module-title">五问五答</div>
+  <div id="qaList"></div>
+</main>
+
+<!-- 接力村史 -->
+<main class="page" id="page-history">
+  <div class="prologue">
+    <img src="images/village_aerial.jpg" alt="石椅村航拍">
+    <div class="module-title" style="text-align:center;">序章 · 羌山之门</div>
+    <p class="note" style="max-width:640px;margin:0 auto;font-size:15px;line-height:2;">石椅村，北川羌族自治县曲山镇高山峡谷间的羌族村寨，一度被称作「悬崖上的村庄」。上世纪六十年代初，这里「粮食吃光、树木砍光、账上无钱」，人称「三光村」。六十四年来，七任党支部书记一棒接一棒，把绝地写成福地。</p>
+  </div>
+  <div id="leaderList"></div>
+  <div class="card road-entry" onclick="go('game')" style="margin-top:24px;">
+    <div>
+      <div class="road-entry-title">特章 · 大岩路</div>
+      <div class="road-entry-desc">三年凿壁，五米宽、三公里——一条路改变一个村庄的命运</div>
+    </div>
+    <div class="road-arrow">→</div>
+  </div>
+</main>
+
+<!-- 看石椅 -->
+<main class="page" id="page-tour">
+  <div class="module-title">看石椅 · 政绩的现场证据</div>
+  <div class="spot-grid" id="spotGrid"></div>
+  <div class="module-title">一日游推荐动线</div>
+  <div class="card">
+    <div id="routeFlow" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;"></div>
+    <p class="note" style="margin-top:16px;">全程约 7—8 小时，晨入羌寨、暮宿茶园，一日看尽石椅答卷。</p>
+  </div>
+</main>
+
+<!-- 我的接力棒 -->
+<main class="page" id="page-profile">
+  <div class="me-score">
+    <div class="num" id="scoreNum">0</div>
+    <div class="lv">政绩值 · 接力棒等级</div>
+  </div>
+  <div class="module-title">徽章墙</div>
+  <div class="badge-grid" id="badgeGrid"></div>
+</main>
+
+<!-- 凿路游戏 -->
+<main class="page" id="page-game">
+  <div class="module-title">凿通大岩路 · 悬崖上的愚公</div>
+  <div class="game-stage">
+    <canvas id="gameCanvas" height="420"></canvas>
+  </div>
+  <div class="game-hud">
+    <div class="hud-row">
+      <span class="hud-label">大岩路</span>
+      <div class="bar"><i id="mileBar"></i></div>
+      <span class="note" id="mileText">0m / 3000m</span>
+    </div>
+    <div class="hud-row">
+      <span class="res-chip">体力 <b id="vitNum">100</b></span>
+      <span class="res-chip">资金 <b id="fundNum">0</b> 元</span>
+      <span class="res-chip">碎石 <b id="stoneNum">0</b></span>
+      <span class="res-chip">柴油 <b id="dieselNum">0</b></span>
+      <span class="res-chip">炸药 <b id="blastNum">0</b></span>
+      <span class="res-chip">人心 <b id="heartNum">70</b></span>
+      <span class="res-chip">第 <b id="chNum">1</b> 章</span>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">工具</span>
+      <div class="tool-row" id="toolRow"></div>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">派工</span>
+      <div class="crew-row" id="crewRow"></div>
+    </div>
+    <div class="hud-row">
+      <span class="hud-label">队友</span>
+      <div class="mate-row" id="mateRow"></div>
+    </div>
+    <div class="hud-row">
+      <button class="btn" onclick="ShiyiGame.hit(event)">抡镐（点岩壁也可，长按重镐）</button>
+      <button class="btn btn-ghost" onclick="ShiyiGame.meal()">背篓饭 +10力</button>
+      <button class="btn btn-ghost" onclick="ShiyiGame.sell()">卖碎石</button>
+      <button class="btn btn-ghost" onclick="ShiyiGame.blast()">起爆电雷管</button>
+    </div>
+    <p class="note" id="gameMsg">点岩壁或按钮开凿；凿岩组超作业面会窝工减半；义务工也耗体力。</p>
+  </div>
+</main>
+
+<!-- 弹层 -->
+<div class="modal-mask" id="modalMask">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<footer class="footer">
+  <div class="motto">为人民出政绩 · 以实干出政绩</div>
+  <p style="margin-top:10px;">石椅答卷 · 政绩观好样本宣传</p>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/game.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
