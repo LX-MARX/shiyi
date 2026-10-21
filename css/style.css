@@ -1,0 +1,220 @@
+/* ============================================================
+   文件名：css/style.css
+   功能描述：石椅答卷网站设计系统——亮色党政红金主题，
+            首页/政绩观/接力村史/看石椅/我的接力棒/凿路游戏。
+   作者：云上党旗飘项目组
+   创建日期：2026-10-21
+   版权声明：本代码为项目原创代码，用于软件著作权登记。
+   ============================================================ */
+:root {
+  --red: #C0392B; --red-deep: #96271C; --red-soft: #F6E3E0;
+  --gold: #C9A254; --gold-deep: #A67C2E; --gold-soft: #F7EEDC;
+  --paper: #F7F2E8; --paper-deep: #EFE7D6;
+  --ink: #2A2419; --ink-soft: #6B6152;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "PingFang SC", "Microsoft YaHei", "Source Han Serif SC", sans-serif;
+  background: linear-gradient(180deg, var(--paper), var(--paper-deep));
+  color: var(--ink);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ============ 顶部导航 ============ */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  box-shadow: 0 4px 20px rgba(150,39,28,.3);
+}
+.nav-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 20px; height: 64px;
+}
+.nav-logo { color: #FFF; font-weight: 700; font-size: 19px; letter-spacing: 2px; display:flex; align-items:center; gap:10px; }
+.nav-logo .logo-badge { width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid var(--gold); }
+.nav-tabs { display: flex; margin-left: auto; overflow-x: auto; }
+.nav-tab {
+  color: rgba(255,248,236,.85); background: none; border: none;
+  font-size: 15px; padding: 10px 18px; letter-spacing: 1px;
+  border-bottom: 3px solid transparent; white-space: nowrap;
+  transition: all .2s;
+}
+.nav-tab:hover { color: #FFF; }
+.nav-tab.on { color: #F0D68A; border-bottom-color: var(--gold); }
+
+/* ============ 页面容器 ============ */
+.page { display: none; max-width: 1100px; margin: 0 auto; padding: 32px 20px 100px; animation: fadeUp .5s ease; }
+.page.on { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+.module-title {
+  font-size: 22px; font-weight: 700; color: var(--red-deep);
+  margin: 44px 0 18px; letter-spacing: 2px; position: relative; padding-bottom: 10px;
+}
+.module-title::after { content: ""; position: absolute; left: 0; bottom: 0; width: 52px; height: 3px; background: linear-gradient(90deg, var(--gold), transparent); }
+
+.card {
+  background: #FFFDF7; border: 1px solid rgba(192,57,43,.1);
+  border-radius: var(--radius); padding: 24px;
+  box-shadow: 0 6px 24px rgba(120,72,20,.08);
+}
+.note { font-size: 13px; color: var(--ink-soft); }
+
+/* ============ 首页：海报区 ============ */
+.hero {
+  position: relative; border-radius: 18px; overflow: hidden;
+  min-height: 420px; display: flex; flex-direction: column; justify-content: center;
+  padding: 60px 48px; color: #FFF8EC;
+}
+.hero-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.hero-mask { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(30,22,14,.45), rgba(30,22,14,.25) 45%, rgba(30,22,14,.7)); }
+.hero > * { position: relative; }
+.hero-kicker { font-size: 14px; color: #E8C87E; letter-spacing: 6px; margin-bottom: 18px; }
+.hero-main { font-size: 46px; font-weight: 700; line-height: 1.5; text-shadow: 0 2px 16px rgba(0,0,0,.4); }
+.hero-main b { color: #F0D68A; }
+.hero-sub { margin-top: 18px; font-size: 15px; color: rgba(255,248,236,.92); letter-spacing: 2px; }
+
+/* 五问循环流动 */
+.q-marquee { overflow: hidden; padding: 8px 0; position: relative; }
+.q-marquee::before, .q-marquee::after { content:""; position:absolute; top:0; bottom:0; width:60px; z-index:2; pointer-events:none; }
+.q-marquee::before { left:0; background:linear-gradient(90deg,var(--paper),transparent); }
+.q-marquee::after { right:0; background:linear-gradient(-90deg,var(--paper),transparent); }
+.q-track { display: flex; gap: 16px; animation: qScroll 26s linear infinite; width: max-content; }
+.q-marquee:hover .q-track { animation-play-state: paused; }
+@keyframes qScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.q-card {
+  flex: 0 0 110px; height: 240px;
+  background: linear-gradient(180deg, var(--red), var(--red-deep));
+  border: 1px solid rgba(201,162,84,.55); border-radius: 12px;
+  display: flex; flex-direction: column; align-items: center; padding: 18px 0;
+  box-shadow: 0 8px 24px rgba(192,57,43,.28); cursor: pointer; transition: transform .2s;
+}
+.q-card:hover { transform: translateY(-6px); }
+.q-spirit { writing-mode: vertical-rl; font-size: 13px; color: #F7EEDC; letter-spacing: 3px; }
+.q-vertical { flex: 1; writing-mode: vertical-rl; font-size: 26px; font-weight: 700; color: #FFF8EC; letter-spacing: 8px; margin: 12px 0; }
+.q-no { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(247,238,220,.7); color: #F7EEDC; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+
+/* 政绩标尺：今昔对比 */
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+.stat-card { text-align: center; padding: 28px 20px; border-top: 4px solid var(--gold); }
+.stat-label { font-size: 14px; color: var(--ink-soft); letter-spacing: 2px; }
+.stat-before { font-size: 14px; color: #9A8F80; text-decoration: line-through; margin: 10px 0 2px; }
+.stat-after { font-size: 34px; font-weight: 700; color: var(--red); margin: 4px 0; }
+.stat-note { font-size: 12px; color: var(--gold-deep); }
+
+/* 互动广场 */
+.entry-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.entry-card { text-align: center; cursor: pointer; transition: transform .2s; position: relative; overflow: hidden; }
+.entry-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(120,72,20,.16); }
+.entry-idx { position: absolute; top: 6px; right: 12px; font-size: 32px; font-weight: 700; color: rgba(201,162,84,.2); }
+.entry-icon { width: 60px; height: 60px; margin: 8px auto 14px; border-radius: 50%; background: linear-gradient(135deg, var(--red), var(--red-deep)); color: #FFF; font-size: 26px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(192,57,43,.3); }
+.entry-name { font-size: 16px; font-weight: 600; }
+.entry-desc { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+/* ============ 政绩观页 ============ */
+.ask-hero { text-align: center; padding: 40px 20px; }
+.ask-hero h1 { font-size: 36px; font-weight: 700; color: var(--ink); }
+.ask-hero p { color: var(--ink-soft); margin-top: 10px; }
+.def-card { background: linear-gradient(145deg, #FFFDF7, var(--gold-soft)); border: 1px solid rgba(201,162,84,.5); text-align: center; }
+.def-slogan { font-size: 22px; font-weight: 700; color: var(--red-deep); }
+.def-text { font-size: 15px; color: var(--ink-soft); line-height: 1.9; margin-top: 14px; }
+.qa { background: #FFFDF7; border-radius: var(--radius); border: 1px solid rgba(192,57,43,.1); margin-bottom: 14px; overflow: hidden; }
+.qa-head { display: flex; align-items: center; gap: 14px; padding: 20px 22px; cursor: pointer; user-select: none; }
+.qa-seal { width: 44px; height: 44px; border-radius: 8px; background: var(--red); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+.qa-question { font-size: 18px; font-weight: 600; flex: 1; }
+.qa-arrow { color: var(--gold); font-size: 22px; transition: transform .3s; }
+.qa.open .qa-arrow { transform: rotate(180deg); }
+.qa-body { max-height: 0; overflow: hidden; transition: max-height .4s ease; padding: 0 22px; }
+.qa.open .qa-body { max-height: 600px; padding: 0 22px 22px; }
+.qa-full { font-size: 15px; color: var(--red-deep); font-weight: 600; margin-bottom: 8px; }
+.qa-essence { font-size: 14px; color: var(--ink); line-height: 1.9; }
+.qa-anchor { margin-top: 14px; padding: 14px 16px; background: rgba(201,162,84,.1); border-left: 4px solid var(--gold); border-radius: 6px; font-size: 13px; color: var(--ink-soft); }
+
+/* ============ 村史接力页 ============ */
+.prologue { text-align: center; padding: 40px 20px; }
+.prologue img { border-radius: 14px; margin: 0 auto 24px; max-height: 380px; object-fit: cover; width: 100%; }
+.bio { display: flex; gap: 28px; align-items: flex-start; margin-bottom: 28px; }
+.bio-portrait { width: 200px; height: 260px; border-radius: 12px; overflow: hidden; flex-shrink: 0; border: 4px solid var(--gold); box-shadow: 0 0 0 3px #FFFDF7, 0 0 0 5px rgba(166,124,46,.4), 0 12px 28px rgba(120,72,20,.22); background: var(--gold-soft); }
+.bio-portrait img { width: 100%; height: 100%; object-fit: cover; }
+.bio-seal { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 44px; font-weight: 700; color: var(--red); writing-mode: vertical-rl; letter-spacing: 8px; background: var(--gold-soft); }
+.bio-right { flex: 1; }
+.bio-order { display: inline-block; background: linear-gradient(90deg, var(--red), var(--red-deep)); color: #FFF; font-size: 13px; padding: 4px 16px; border-radius: 4px; letter-spacing: 2px; }
+.bio-name { font-size: 40px; font-weight: 700; color: var(--red-deep); letter-spacing: 4px; margin-top: 12px; display: flex; align-items: center; gap: 14px; }
+.bio-keyword { font-size: 15px; color: var(--red); border: 2px solid var(--red); border-radius: 6px; padding: 2px 12px; }
+.bio-period { font-size: 14px; color: var(--ink-soft); margin-top: 6px; letter-spacing: 2px; }
+.bio-title { font-size: 17px; font-weight: 600; color: var(--gold-deep); margin-top: 12px; }
+.bio-story { font-size: 15px; line-height: 2; color: var(--ink); margin-top: 12px; text-indent: 2em; }
+.bio-quote { margin-top: 16px; padding: 16px 20px; background: var(--gold-soft); border-left: 4px solid var(--gold); border-radius: 8px; font-size: 14px; color: var(--ink-soft); font-style: italic; }
+.bio-quote b { color: var(--red-deep); font-style: normal; display: block; margin-top: 6px; }
+@media (max-width: 720px) { .bio { flex-direction: column; } .bio-portrait { width: 100%; height: 320px; } }
+
+/* 大岩路入口 */
+.road-entry { background: linear-gradient(135deg, #FFF8EC, var(--gold-soft) 55%, #E8D5AE); border: 1px solid rgba(201,162,84,.6); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: transform .2s; }
+.road-entry:hover { transform: translateY(-3px); }
+.road-entry-title { font-size: 20px; font-weight: 700; color: var(--red-deep); }
+.road-entry-desc { font-size: 14px; color: var(--gold-deep); margin-top: 6px; }
+.road-arrow { font-size: 32px; color: var(--gold); }
+
+/* ============ 看石椅 ============ */
+.spot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.spot-card { overflow: hidden; padding: 0; cursor: pointer; transition: transform .2s; }
+.spot-card:hover { transform: translateY(-4px); }
+.spot-card img { width: 100%; height: 170px; object-fit: cover; }
+.spot-bd { padding: 16px; }
+.spot-name { font-size: 17px; font-weight: 600; }
+.spot-ol { font-size: 13px; color: var(--ink-soft); margin-top: 4px; }
+
+/* ============ 我的接力棒 ============ */
+.me-score { background: linear-gradient(135deg, var(--red), var(--red-deep)); border-radius: 16px; padding: 40px; color: #FFF; text-align: center; }
+.me-score .num { font-size: 52px; font-weight: 700; color: #F0D68A; }
+.me-score .lv { font-size: 15px; opacity: .92; margin-top: 6px; letter-spacing: 2px; }
+.badge-grid { display: grid: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 14px; display: grid; }
+.badge { background: #FFFDF7; border-radius: 12px; padding: 18px 10px; text-align: center; border: 1px solid rgba(201,162,84,.3); }
+.badge .ic { width: 48px; height: 48px; margin: 0 auto 10px; border-radius: 50%; background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.badge .bn { font-size: 13px; }
+.badge.dim { opacity: .35; }
+.badge.dim .ic { background: #ccc; }
+
+/* ============ 凿路游戏 ============ */
+.game-stage { position: relative; border-radius: 16px; overflow: hidden; background: #000; }
+#gameCanvas { width: 100%; display: block; }
+.game-hud { padding: 18px 0; }
+.hud-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.hud-label { font-size: 14px; font-weight: 700; color: var(--red-deep); }
+.bar { flex: 1; height: 12px; background: rgba(42,36,25,.1); border-radius: 6px; overflow: hidden; min-width: 120px; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--red), var(--gold)); border-radius: 6px; transition: width .3s; }
+.res-chip { background: #FFFDF7; border: 1px solid rgba(192,57,43,.12); border-radius: 10px; padding: 8px 14px; font-size: 14px; }
+.btn { background: linear-gradient(135deg, var(--red), var(--red-deep)); color: #FFF; border: none; border-radius: 10px; padding: 12px 26px; font-size: 15px; font-weight: 600; letter-spacing: 1px; transition: transform .15s; }
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: scale(.97); }
+.btn-ghost { background: transparent; border: 1px solid var(--gold); color: var(--gold-deep); }
+.tool-row, .crew-row, .mate-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.tool, .crew, .mate { flex: 1; min-width: 90px; background: #FFFDF7; border: 2px solid rgba(42,36,25,.12); border-radius: 12px; padding: 14px 8px; text-align: center; cursor: pointer; transition: all .15s; }
+.tool.on { border-color: var(--red); background: var(--red-soft); }
+.tool.locked, .mate.locked { opacity: .35; }
+.tool-ic, .mate-face { font-size: 24px; font-weight: 700; color: var(--red-deep); }
+.crew-num { font-size: 22px; font-weight: 700; margin: 6px 0; }
+.crew-btn { width: 30px; height: 30px; border-radius: 50%; background: var(--red-soft); color: var(--red); border: none; font-size: 18px; font-weight: 700; }
+.modal-mask { position: fixed; inset: 0; background: rgba(42,36,25,.55); display: none; align-items: center; justify-content: center; z-index: 200; padding: 24px; }
+.modal-mask.on { display: flex; }
+.modal-card { background: #FFFDF7; border-radius: 16px; padding: 30px; max-width: 480px; width: 100%; border-top: 6px solid var(--red); max-height: 85vh; overflow-y: auto; }
+.modal-img { width: calc(100% + 60px); margin: -30px -30px 18px; height: 200px; object-fit: cover; border-radius: 16px 16px 0 0; }
+.modal-title { font-size: 22px; font-weight: 700; margin-bottom: 12px; }
+.modal-text { font-size: 15px; line-height: 1.9; margin-bottom: 18px; }
+.modal-opt { width: 100%; text-align: left; background: var(--gold-soft); border: 1px solid rgba(201,162,84,.4); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; font-size: 14px; }
+
+/* 页脚 */
+.footer { text-align: center; padding: 40px 20px; color: var(--ink-soft); font-size: 13px; border-top: 1px solid rgba(201,162,84,.3); margin-top: 40px; }
+.motto { color: var(--gold-deep); letter-spacing: 4px; font-size: 14px; }
+
+@media (max-width: 720px) {
+  .hero { padding: 40px 24px; min-height: 320px; }
+  .hero-main { font-size: 32px; }
+  .nav-tab { padding: 10px 12px; font-size: 14px; }
+}

@@ -1,0 +1,225 @@
+/* ============================================================
+   文件名：css/features.css
+   功能描述：石椅答卷互动广场三大功能样式——金句海报生成器、
+            云上集章打卡、情境测评。复用 style.css 主题变量，
+            亮色党政红金纸墨风，浅底深字、深底白字。
+   作者：云上党旗飘项目组
+   创建日期：2026-10-21
+   版权声明：本代码为项目原创代码，用于软件著作权登记。
+   ============================================================ */
+
+/* ============ 功能全屏弹层骨架 ============ */
+.ft-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: linear-gradient(180deg, var(--paper), var(--paper-deep));
+  overflow-y: auto; display: none;
+  animation: ftFadeIn .3s ease;
+}
+.ft-overlay.on { display: block; }
+@keyframes ftFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.ft-head {
+  position: sticky; top: 0; z-index: 10;
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  box-shadow: 0 4px 20px rgba(150,39,28,.3);
+  padding: 0 20px; height: 60px;
+  display: flex; align-items: center; gap: 14px;
+}
+.ft-head-title { color: #FFF8EC; font-size: 18px; font-weight: 700; letter-spacing: 2px; }
+.ft-head-sub { color: rgba(247,238,220,.75); font-size: 12px; letter-spacing: 1px; }
+.ft-close {
+  margin-left: auto; background: rgba(255,255,255,.14); color: #F7EEDC;
+  border: 1px solid rgba(201,162,84,.6); border-radius: 8px;
+  width: 38px; height: 38px; font-size: 18px; line-height: 1;
+  transition: background .2s;
+}
+.ft-close:hover { background: rgba(255,255,255,.28); }
+
+.ft-body { max-width: 1100px; margin: 0 auto; padding: 28px 20px 90px; }
+.ft-sec-title {
+  font-size: 16px; font-weight: 700; color: var(--red-deep);
+  letter-spacing: 2px; margin: 26px 0 12px; display: flex; align-items: center; gap: 10px;
+}
+.ft-sec-title::before { content: ""; width: 6px; height: 18px; background: linear-gradient(180deg, var(--red), var(--gold)); border-radius: 3px; }
+
+/* ============ 一、金句海报生成器 ============ */
+.poster-layout { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+@media (max-width: 900px) { .poster-layout { grid-template-columns: 1fr; } }
+
+/* 语录列表 */
+.quote-list { max-height: 380px; overflow-y: auto; padding-right: 6px; }
+.quote-item {
+  background: #FFFDF7; border: 1px solid rgba(192,57,43,.12);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;
+  cursor: pointer; transition: all .18s; position: relative;
+}
+.quote-item:hover { border-color: var(--gold); transform: translateX(3px); }
+.quote-item.on { border-color: var(--red); background: var(--red-soft); box-shadow: 0 4px 14px rgba(192,57,43,.18); }
+.quote-item.on::before {
+  content: "✓"; position: absolute; top: 10px; right: 12px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--red); color: #FFF; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.quote-text { font-size: 14px; color: var(--ink); line-height: 1.8; padding-right: 26px; }
+.quote-meta { margin-top: 8px; font-size: 12px; color: var(--ink-soft); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.quote-tag { background: var(--gold-soft); color: var(--gold-deep); border-radius: 4px; padding: 1px 8px; font-size: 11px; }
+
+/* 模板选择 */
+.tpl-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+@media (max-width: 640px) { .tpl-row { grid-template-columns: repeat(3, 1fr); } }
+.tpl-card {
+  border-radius: 12px; overflow: hidden; cursor: pointer;
+  border: 3px solid transparent; transition: all .18s; position: relative;
+}
+.tpl-card.on { border-color: var(--red); box-shadow: 0 6px 18px rgba(192,57,43,.3); transform: translateY(-3px); }
+.tpl-preview { height: 110px; display: flex; align-items: center; justify-content: center; }
+.tpl-preview span { font-size: 26px; font-weight: 700; letter-spacing: 4px; }
+.tpl-name { text-align: center; font-size: 12px; padding: 8px 4px; background: #FFFDF7; color: var(--ink); font-weight: 600; }
+/* 五款模板预览渐变（与 Canvas 配色一致） */
+.tpl-1 .tpl-preview { background: linear-gradient(160deg, #D94A38, #96271C); color: #F7EEDC; }
+.tpl-2 .tpl-preview { background: linear-gradient(160deg, #F7EEDC, #E2C998); color: #7A5B1E; }
+.tpl-3 .tpl-preview { background: linear-gradient(160deg, #8FB6D4, #4A6B8A); color: #FFFDF7; }
+.tpl-4 .tpl-preview { background: linear-gradient(160deg, #E88A4B, #A84A1F); color: #FFF8EC; }
+.tpl-5 .tpl-preview { background: linear-gradient(160deg, #7FA98C, #3A5D47); color: #F7F2E8; }
+
+/* 海报预览与下载 */
+.poster-stage { position: sticky; top: 80px; text-align: center; }
+.poster-canvas-wrap {
+  border-radius: 14px; overflow: hidden; display: inline-block;
+  box-shadow: 0 16px 44px rgba(120,72,20,.3);
+  border: 1px solid rgba(201,162,84,.5); line-height: 0;
+}
+#posterCanvas { width: 300px; height: 400px; }
+.poster-actions { margin-top: 16px; display: flex; gap: 10px; justify-content: center; }
+
+/* ============ 二、云上集章打卡 ============ */
+.checkin-progress {
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  border-radius: 16px; padding: 24px 28px; color: #FFF8EC;
+  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  box-shadow: 0 10px 30px rgba(150,39,28,.3);
+}
+.checkin-progress .big { font-size: 40px; font-weight: 700; color: #F0D68A; }
+.checkin-progress .lab { font-size: 14px; letter-spacing: 2px; opacity: .92; }
+.checkin-bar { flex: 1; min-width: 160px; height: 12px; background: rgba(255,255,255,.2); border-radius: 6px; overflow: hidden; }
+.checkin-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--gold), #F0D68A); border-radius: 6px; transition: width .5s ease; }
+.checkin-done-tip { width: 100%; font-size: 14px; color: #F0D68A; letter-spacing: 1px; }
+
+.stamp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-top: 22px; }
+.stamp-card {
+  background: #FFFDF7; border: 1px solid rgba(192,57,43,.12);
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  transition: transform .2s, box-shadow .2s; position: relative;
+}
+.stamp-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(120,72,20,.16); }
+.stamp-photo { width: 100%; height: 150px; object-fit: cover; }
+.stamp-photo-none {
+  width: 100%; height: 150px; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--gold-soft), #E8D5AE);
+  font-size: 52px; font-weight: 700; color: var(--red-deep); letter-spacing: 6px;
+}
+.stamp-bd { padding: 16px; }
+.stamp-name { font-size: 17px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.stamp-ol { font-size: 13px; color: var(--ink-soft); margin-top: 4px; line-height: 1.7; }
+.stamp-state { margin-top: 12px; font-size: 12px; letter-spacing: 1px; color: var(--gold-deep); }
+
+/* 红色圆形印章（盖上的章） */
+.stamp-seal {
+  position: absolute; top: 92px; right: 18px; z-index: 3;
+  width: 86px; height: 86px; border-radius: 50%;
+  border: 4px solid var(--red); color: var(--red);
+  display: none; align-items: center; justify-content: center;
+  flex-direction: column; transform: rotate(-14deg);
+  background: rgba(255,253,247,.88);
+  box-shadow: 0 0 0 3px rgba(192,57,43,.18), inset 0 0 0 2px rgba(192,57,43,.35);
+  pointer-events: none;
+}
+.stamp-seal .ss-t { font-size: 20px; font-weight: 700; letter-spacing: 2px; line-height: 1.2; }
+.stamp-seal .ss-d { font-size: 10px; margin-top: 3px; letter-spacing: 1px; }
+.stamp-card.stamped .stamp-seal { display: flex; animation: stampIn .45s cubic-bezier(.2,2.2,.4,1); }
+@keyframes stampIn {
+  0% { transform: rotate(-14deg) scale(2.6); opacity: 0; }
+  60% { transform: rotate(-14deg) scale(.92); opacity: 1; }
+  100% { transform: rotate(-14deg) scale(1); opacity: 1; }
+}
+.stamp-card.stamped { border-color: rgba(192,57,43,.45); }
+.stamp-card.stamped .stamp-state { color: var(--red); font-weight: 700; }
+.stamp-card.shake { animation: stampShake .3s ease; }
+@keyframes stampShake {
+  0%,100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+/* ============ 三、情境测评 ============ */
+.quiz-intro {
+  background: #FFFDF7; border: 1px solid rgba(201,162,84,.5);
+  border-radius: 16px; padding: 40px 34px; text-align: center;
+  box-shadow: 0 10px 30px rgba(120,72,20,.12);
+}
+.quiz-intro h2 { font-size: 26px; color: var(--red-deep); letter-spacing: 3px; }
+.quiz-intro p { font-size: 15px; color: var(--ink-soft); line-height: 2; margin: 16px auto 24px; max-width: 560px; }
+
+.quiz-topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.quiz-prog-num { font-size: 14px; font-weight: 700; color: var(--red-deep); white-space: nowrap; }
+.quiz-prog-bar { flex: 1; height: 10px; background: rgba(42,36,25,.1); border-radius: 5px; overflow: hidden; }
+.quiz-prog-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--red), var(--gold)); border-radius: 5px; transition: width .4s ease; }
+
+.quiz-card {
+  background: #FFFDF7; border: 1px solid rgba(192,57,43,.12);
+  border-radius: 16px; padding: 30px; box-shadow: 0 10px 30px rgba(120,72,20,.1);
+  animation: quizIn .35s ease;
+}
+@keyframes quizIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.quiz-scene-label { font-size: 12px; color: var(--gold-deep); letter-spacing: 3px; margin-bottom: 10px; }
+.quiz-scene { font-size: 18px; font-weight: 600; color: var(--ink); line-height: 1.9; }
+.quiz-opts { margin-top: 22px; }
+.quiz-opt {
+  width: 100%; text-align: left; background: var(--gold-soft);
+  border: 1px solid rgba(201,162,84,.4); border-radius: 12px;
+  padding: 16px 18px; margin-bottom: 12px; font-size: 15px; color: var(--ink);
+  transition: all .18s; line-height: 1.7;
+}
+.quiz-opt:hover { border-color: var(--red); transform: translateX(4px); }
+.quiz-opt.picked {
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  border-color: var(--red-deep); color: #FFF8EC; font-weight: 600;
+  box-shadow: 0 6px 18px rgba(192,57,43,.35);
+}
+
+/* 测评结果 */
+.quiz-result-head {
+  background: linear-gradient(135deg, var(--red), var(--red-deep));
+  border-radius: 16px; padding: 34px; color: #FFF8EC; text-align: center;
+  box-shadow: 0 12px 34px rgba(150,39,28,.32);
+}
+.quiz-result-head .rh-k { font-size: 13px; color: #E8C87E; letter-spacing: 4px; }
+.quiz-result-head .rh-name { font-size: 34px; font-weight: 700; color: #F0D68A; margin-top: 10px; letter-spacing: 4px; }
+.quiz-result-head .rh-role { font-size: 14px; margin-top: 8px; opacity: .92; letter-spacing: 1px; }
+.quiz-result-head .rh-word { font-size: 14px; line-height: 1.9; margin-top: 14px; color: rgba(255,248,236,.95); }
+
+.dim-list { margin-top: 6px; }
+.dim-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.dim-name { width: 96px; font-size: 14px; font-weight: 700; color: var(--ink); white-space: nowrap; }
+.dim-name small { display: block; font-size: 11px; color: var(--ink-soft); font-weight: 400; }
+.dim-bar { flex: 1; height: 14px; background: rgba(42,36,25,.08); border-radius: 7px; overflow: hidden; }
+.dim-bar i { display: block; height: 100%; border-radius: 7px; background: linear-gradient(90deg, var(--red), var(--gold)); transition: width .8s ease; }
+.dim-val { width: 42px; text-align: right; font-size: 14px; font-weight: 700; color: var(--red-deep); }
+
+.review-item {
+  background: #FFFDF7; border: 1px solid rgba(192,57,43,.1);
+  border-radius: 12px; padding: 18px 20px; margin-bottom: 12px;
+}
+.review-q { font-size: 14px; color: var(--ink); font-weight: 600; line-height: 1.8; }
+.review-q .rn { color: var(--gold-deep); margin-right: 8px; }
+.review-my { margin-top: 8px; font-size: 13px; color: var(--red-deep); }
+.review-my b { font-weight: 700; }
+.review-fact {
+  margin-top: 10px; padding: 12px 14px; font-size: 13px; color: var(--ink-soft);
+  background: rgba(201,162,84,.1); border-left: 4px solid var(--gold); border-radius: 6px; line-height: 1.8;
+}
+.quiz-actions { display: flex; gap: 12px; justify-content: center; margin: 26px 0 10px; flex-wrap: wrap; }
+
+/* 三个功能共用的主按钮微调 */
+.btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: #FFF; }
