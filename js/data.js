@@ -4,7 +4,7 @@ window.DATA={
     {
       "id": 1,
       "name": "何国发",
-      "photo": "/images/leader_he.jpg",
+      "photo": "images/leader_he.jpg",
       "order": "第一任",
       "period": "1962—1978",
       "keyword": "奠基",
@@ -65,7 +65,7 @@ window.DATA={
     {
       "id": 4,
       "name": "陈财业",
-      "photo": "/images/leader_cai.jpg",
+      "photo": "images/leader_cai.jpg",
       "order": "第四任",
       "period": "约1988—2000",
       "keyword": "孤勇",
@@ -85,7 +85,7 @@ window.DATA={
     {
       "id": 5,
       "name": "邵再贵",
-      "photo": "/images/leader_shao.jpg",
+      "photo": "images/leader_shao.jpg",
       "order": "第五任",
       "period": "约2000—2008",
       "keyword": "愚公",
@@ -107,7 +107,7 @@ window.DATA={
     {
       "id": 6,
       "name": "王庆保",
-      "photo": "/images/leader_wang.jpg",
+      "photo": "images/leader_wang.jpg",
       "order": "第六任",
       "period": "2008—2013",
       "keyword": "重建",
@@ -127,7 +127,7 @@ window.DATA={
     {
       "id": 7,
       "name": "陈爱军",
-      "photo": "/images/leader_chen.jpg",
+      "photo": "images/leader_chen.jpg",
       "order": "第七任",
       "period": "2013 至今",
       "keyword": "突破",
@@ -238,7 +238,7 @@ window.DATA={
       "id": 1,
       "name": "石椅羌寨",
       "icon": "寨",
-      "photo": "/images/qiang_house.jpg",
+      "photo": "images/qiang_house.jpg",
       "oneLine": "羌风浓郁的民宿集群，\"很好的样子\"第一印象",
       "position": "石椅村一组核心区，自大岩路（长虹路）盘山而上即达，为村庄门户。",
       "highlights": [
@@ -260,7 +260,7 @@ window.DATA={
       "id": 2,
       "name": "村史馆",
       "icon": "史",
-      "photo": "/images/exhibit_wall.jpg",
+      "photo": "images/exhibit_wall.jpg",
       "oneLine": "一座村庄六十四年的接力档案",
       "position": "石椅村村委会旁，由陈家老祠堂改建而成。",
       "highlights": [
@@ -324,7 +324,7 @@ window.DATA={
       "id": 5,
       "name": "亚日萨茶园",
       "icon": "茶",
-      "photo": "/images/tea_center.jpg",
+      "photo": "images/tea_center.jpg",
       "oneLine": "高山云雾间的茶旅融合综合体",
       "position": "石椅村三组千亩高山茶园片区，与禹泉文旅共建。",
       "highlights": [
@@ -346,7 +346,7 @@ window.DATA={
       "id": 6,
       "name": "运动步道",
       "icon": "道",
-      "photo": "/images/team_road.jpg",
+      "photo": "images/team_road.jpg",
       "oneLine": "从羌寨走向山顶的十年之路",
       "position": "自石椅羌寨起，经云上步道至林海石源，再达山顶观景平台。",
       "highlights": [
