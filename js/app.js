@@ -26,13 +26,22 @@
   /* ================= 首页渲染 ================= */
   const SHORT = ['为谁树', '靠谁树', '干多久', '树什么', '政绩界'];
   const five = D.spirit.five.map((f, i) => ({ ...f, short: SHORT[i] || f.question }));
-  // 双份循环
-  $('qTrack').innerHTML = five.concat(five).map((f, i) => `
-    <div class="q-card" onclick="go('spirit')">
-      <div class="q-spirit">${f.name}</div>
-      <div class="q-vertical">${f.short}</div>
-      <div class="q-no">${(i % 5) + 1}</div>
-    </div>`).join('');
+  /* 五问单卡自动轮播：一次突出一问，4 秒切换，就这 5 个 */
+  let qIdx = 0;
+  function renderQ() {
+    const f = five[qIdx];
+    $('qCarousel').innerHTML = `
+      <div class="card" onclick="go('spirit')" style="cursor:pointer;text-align:center;padding:44px 30px;border-top:4px solid var(--gold);position:relative;overflow:hidden;">
+        <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,var(--red),var(--red-deep));color:#FFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;box-shadow:0 6px 16px rgba(192,57,43,.3);">${qIdx + 1}</div>
+        <div style="margin-top:52px;font-size:13px;color:var(--gold-deep);letter-spacing:6px;">${f.name}</div>
+        <div style="font-size:38px;font-weight:700;color:var(--red-deep);letter-spacing:8px;margin-top:12px;">${f.short}</div>
+        <div style="font-size:14px;color:var(--ink-soft);margin-top:16px;line-height:1.8;max-width:520px;margin-left:auto;margin-right:auto;">${f.essence}</div>
+        <div style="margin-top:22px;font-size:12px;color:var(--gold-deep);">点击查看完整回答 →</div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-top:18px;">${five.map((_, i) => `<span style="width:${i === qIdx ? 22 : 8}px;height:8px;border-radius:4px;background:${i === qIdx ? 'var(--red)' : 'rgba(42,36,25,.18)'};transition:all .3s;display:inline-block;"></span>`).join('')}</div>
+      </div>`;
+  }
+  renderQ();
+  setInterval(() => { qIdx = (qIdx + 1) % 5; renderQ(); }, 4000);
 
   const stats = [
     { label: '人均可支配收入', before: '8000 元', after: '10 万元', note: '2008 → 2022，增长超 11 倍' },
@@ -109,7 +118,9 @@
     `<span class="res-chip">${r}</span>${i < route.length - 1 ? '<span style="color:var(--red);">→</span>' : ''}`).join('');
 
   /* ================= 我的接力棒渲染 ================= */
-  let score = +(localStorage.getItem('shiyi_score') || 0);
+  // 优先取登录账号的政绩值，未登录用本机值
+  const me = window.ShiyiAuth && ShiyiAuth.current();
+  let score = me ? (me.score || 0) : +(localStorage.getItem('shiyi_score') || 0);
   $('scoreNum').textContent = score;
   const badges = [
     { ic: '读', n: '读完村史', on: true }, { ic: '问', n: '五问五答', on: true },

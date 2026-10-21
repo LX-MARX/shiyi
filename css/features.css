@@ -223,3 +223,18 @@
 
 /* 三个功能共用的主按钮微调 */
 .btn-gold { background: linear-gradient(135deg, var(--gold), var(--gold-deep)); color: #FFF; }
+
+/* ============ 登录用户区（导航栏） ============ */
+.nav-login-btn {
+  background: rgba(255,255,255,.16); color: #FFF; border: 1px solid rgba(240,214,138,.5);
+  border-radius: 20px; padding: 7px 18px; font-size: 14px; white-space: nowrap;
+}
+.nav-login-btn:hover { background: rgba(255,255,255,.28); }
+.nav-user { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.nav-avatar {
+  width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#C9A254,#A67C2E);
+  color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;
+}
+.nav-name { color: #FFF; font-size: 14px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-role { font-size: 11px; color: #F7EEDC; background: rgba(255,255,255,.18); border-radius: 10px; padding: 2px 8px; }
+.nav-role-admin { background: var(--gold, #C9A254); color: #5A3A12; font-weight: 600; }
