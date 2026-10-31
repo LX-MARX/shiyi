@@ -2,20 +2,25 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#96271C">
+<meta name="color-scheme" content="light">
 <title>石椅答卷 · 政绩观好样本</title>
 <meta name="description" content="六十四年一锤一凿，悬崖上的石椅村凿出正确政绩观的答卷。走进总书记点赞的北川石椅村。">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/features.css">
 </head>
 <body>
+<a class="skip-link" href="#page-home">跳到正文</a>
+<noscript><div class="noscript">本网站的村史阅读与互动功能需要启用 JavaScript。</div></noscript>
+<div class="site-toast" id="siteToast" role="status" aria-live="polite"></div>
 
 <!-- 顶部导航 -->
-<nav class="nav">
+<nav class="nav" aria-label="主导航">
   <div class="nav-inner">
-    <div class="nav-logo"><span class="logo-badge">石</span>石椅答卷</div>
+    <button class="nav-logo" data-page="home" aria-label="返回好样子首页"><span class="logo-badge">石</span><span>石椅答卷</span></button>
     <div class="nav-tabs" id="navTabs">
-      <button class="nav-tab on" data-page="home">好样子</button>
+      <button class="nav-tab on" data-page="home" aria-current="page">好样子</button>
       <button class="nav-tab" data-page="spirit">政绩观</button>
       <button class="nav-tab" data-page="history">接力村史</button>
       <button class="nav-tab" data-page="tour">看石椅</button>
@@ -28,20 +33,23 @@
 </nav>
 
 <!-- 登录/注册弹层 -->
-<div class="modal-mask" id="authMask">
-  <div class="modal-card" style="max-width:380px;">
-    <div class="modal-title" style="text-align:center;">登录 / 注册</div>
-    <p class="note" style="text-align:center;margin-bottom:16px;">登录后政绩值与徽章归属你的账号</p>
-    <input id="authAccount" placeholder="账号 / 邮箱" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
-    <input id="authNick" placeholder="昵称（注册时填）" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
-    <input id="authPwd" type="password" placeholder="密码（至少 6 位）" style="width:100%;padding:12px 14px;margin-bottom:12px;border:1px solid rgba(192,57,43,.2);border-radius:10px;font-size:15px;">
-    <div id="authMsg" style="color:var(--red);font-size:13px;min-height:20px;margin-bottom:8px;"></div>
-    <div style="display:flex;gap:10px;">
-      <button class="btn" style="flex:1;" onclick="ShiyiAuth.submit('login')">登录</button>
-      <button class="btn btn-ghost" style="flex:1;" onclick="ShiyiAuth.submit('reg')">注册</button>
-    </div>
-    <p class="note" style="text-align:center;margin-top:14px;cursor:pointer;" onclick="ShiyiAuth.hide()">暂不登录，先逛逛 →</p>
-  </div>
+<div class="modal-mask" id="authMask" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <form class="modal-card auth-card" id="authForm">
+    <button type="button" class="modal-x" onclick="ShiyiAuth.hide()" aria-label="关闭登录窗口">×</button>
+    <div class="modal-title" id="authTitle">登录 / 注册</div>
+    <p class="note auth-intro">登录后，集章、测评与接力记录归属你的账号。</p>
+    <label class="field-label" for="authAccount">邮箱</label>
+    <input class="field" id="authAccount" name="email" type="email" inputmode="email" autocomplete="email" placeholder="name@example.com" required>
+    <label class="field-label" for="authNick">昵称 <span>注册时填写</span></label>
+    <input class="field" id="authNick" name="nickname" autocomplete="nickname" maxlength="20" placeholder="2—20 个字符">
+    <label class="field-label" for="authPwd">密码</label>
+    <input class="field" id="authPwd" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 位" required>
+    <div id="authCodeWrap" hidden><label class="field-label" for="authCode">邮箱验证码</label><input class="field" id="authCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="查看邮件并输入验证码"></div>
+    <div id="authMsg" class="form-msg" role="alert" aria-live="polite"></div>
+    <div class="auth-actions"><button class="btn" id="loginBtn" type="submit" data-mode="login">登录</button><button class="btn btn-ghost" id="regBtn" type="submit" data-mode="reg">注册</button></div>
+    <button type="button" class="text-btn" onclick="ShiyiAuth.hide()">暂不登录，先逛逛</button>
+    <p class="privacy-note">密码仅用于账号认证，网站不会在本地保存明文密码。</p>
+  </form>
 </div>
 
 <!-- 首页 -->
@@ -55,21 +63,19 @@
   </section>
 
   <div class="module-title">政绩观五问</div>
-  <div class="q-carousel" id="qCarousel" style="position:relative;height:300px;">
-    <!-- JS 渲染：五问单卡自动轮播，一次一张 -->
-  </div>
+  <section class="q-carousel" id="qCarousel" aria-label="政绩观五问轮播"></section>
 
   <div class="module-title">政绩的标尺</div>
   <div class="stats-grid" id="statsGrid"></div>
 
   <div class="module-title">大岩路</div>
-  <div class="card road-entry" onclick="go('game')">
+  <button class="card road-entry" onclick="go('game')">
     <div>
       <div class="road-entry-title">亲手凿一次大岩路</div>
       <div class="road-entry-desc">一锤一凿，凿出悬崖上的生路</div>
     </div>
-    <div class="road-arrow">→</div>
-  </div>
+    <span class="road-arrow" aria-hidden="true">→</span>
+  </button>
 
   <div class="module-title">互动广场</div>
   <!-- 七大互动入口（凿路 / 五问 / 村史 / 看石椅 / 海报 / 集章 / 测评），JS 统一渲染不对称网格 -->
@@ -98,13 +104,13 @@
     <p class="note" style="max-width:640px;margin:0 auto;font-size:15px;line-height:2;">石椅村，北川羌族自治县曲山镇高山峡谷间的羌族村寨，一度被称作「悬崖上的村庄」。上世纪六十年代初，这里「粮食吃光、树木砍光、账上无钱」，人称「三光村」。六十四年来，七任党支部书记一棒接一棒，把绝地写成福地。</p>
   </div>
   <div id="leaderList"></div>
-  <div class="card road-entry" onclick="go('game')" style="margin-top:24px;">
-    <div>
-      <div class="road-entry-title">特章 · 大岩路</div>
-      <div class="road-entry-desc">三年凿壁，五米宽、三公里——一条路改变一个村庄的命运</div>
-    </div>
-    <div class="road-arrow">→</div>
-  </div>
+  <button class="card road-entry" onclick="go('game')" style="margin-top:24px;">
+    <span>
+      <span class="road-entry-title">特章 · 大岩路</span>
+      <span class="road-entry-desc">三年凿壁，五米宽、三公里——一条路改变一个村庄的命运</span>
+    </span>
+    <span class="road-arrow" aria-hidden="true">→</span>
+  </button>
 </main>
 
 <!-- 看石椅 -->
@@ -132,7 +138,8 @@
 <main class="page" id="page-game">
   <div class="module-title">凿通大岩路 · 悬崖上的愚公</div>
   <div class="game-stage">
-    <canvas id="gameCanvas" height="420"></canvas>
+    <canvas id="gameCanvas" height="420" tabindex="0" role="img" aria-label="大岩路凿岩场景。点击或轻触岩壁开凿，长按使用重镐；也可使用下方按钮。"></canvas>
+    <div class="game-status-strip"><span id="gameChapterName">第一章 · 关门</span><span id="gameWageText">30 秒后结算工钱</span></div>
   </div>
   <div class="game-hud">
     <div class="hud-row">
@@ -146,6 +153,7 @@
       <span class="res-chip">碎石 <b id="stoneNum">0</b></span>
       <span class="res-chip">柴油 <b id="dieselNum">0</b></span>
       <span class="res-chip">炸药 <b id="blastNum">0</b></span>
+      <span class="res-chip">口粮 <b id="foodNum">2</b></span>
       <span class="res-chip">人心 <b id="heartNum">70</b></span>
       <span class="res-chip">第 <b id="chNum">1</b> 章</span>
     </div>
@@ -163,17 +171,19 @@
     </div>
     <div class="hud-row">
       <button class="btn" onclick="ShiyiGame.hit(event)">抡镐（点岩壁也可，长按重镐）</button>
-      <button class="btn btn-ghost" onclick="ShiyiGame.meal()">背篓饭 +10力</button>
-      <button class="btn btn-ghost" onclick="ShiyiGame.sell()">卖碎石</button>
-      <button class="btn btn-ghost" onclick="ShiyiGame.blast()">起爆电雷管</button>
+      <button class="btn btn-ghost" id="mealBtn" onclick="ShiyiGame.meal()">背篓饭 +10力</button>
+      <button class="btn btn-ghost" onclick="ShiyiGame.sell()">卖碎石（50块）</button>
+      <button class="btn btn-ghost" onclick="ShiyiGame.blast()">安全爆破</button>
+      <button class="btn btn-plain" onclick="ShiyiGame.resetConfirm()">重新开局</button>
     </div>
-    <p class="note" id="gameMsg">点岩壁或按钮开凿；凿岩组超作业面会窝工减半；义务工也耗体力。</p>
+    <div class="game-guide"><b>经营提示</b>：凿岩得碎石，50 块可售；口粮有限，后勤组会定期补给。召集与每 30 秒薪资都消耗资金，欠薪会降低效率。</div>
+    <p class="note game-message" id="gameMsg" role="status" aria-live="polite"></p>
   </div>
 </main>
 
 <!-- 弹层 -->
-<div class="modal-mask" id="modalMask">
-  <div class="modal-card" id="modalCard"></div>
+<div class="modal-mask" id="modalMask" role="dialog" aria-modal="true" aria-label="内容窗口">
+  <div class="modal-card" id="modalCard" tabindex="-1"></div>
 </div>
 
 <footer class="footer">
@@ -181,6 +191,8 @@
   <p style="margin-top:10px;">石椅答卷 · 政绩观好样本宣传</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@tencent-ai/workbuddy-cloud-sdk@dev/lib/index.global.js"></script>
+<script src="js/cloud.js"></script>
 <script src="js/data.js"></script>
 <script src="js/game.js"></script>
 <script src="js/auth.js"></script>
