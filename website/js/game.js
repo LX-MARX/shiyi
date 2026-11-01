@@ -43,18 +43,28 @@ window.ShiyiGame = (function () {
     { id: 1, name: '八磅锤', icon: '锤', mult: 2, unlock: 1 },
     { id: 2, name: '钻孔机', icon: '钻', mult: 4, unlock: 2, diesel: true },
   ];
+  const ROLES = [
+    { id: 'shao', name: '邵再贵', title: '攻坚带头人', desc: '主动开凿 +25%，班组自动施工 −10%', unlock: 0 },
+    { id: 'he', name: '何国发', title: '稳健主心骨', desc: '背篓饭 +6 体力，恢复间隔 −1 秒', unlock: 0 },
+    { id: 'wang', name: '王庆保', title: '组织协调者', desc: '班组自动施工 +35%，碎石售价 +10%', unlock: 1 },
+  ];
+  const SITE_EVENTS = {
+    danger: { name: '危岩松动', desc: '20 秒内排险，否则损失进度、体力与人心', action: '安全排险 · 8 体力', duration: 20 },
+    supply: { name: '乡亲送来背篓', desc: '趁热领取补给，补充口粮与柴油', action: '领取补给', duration: 25 },
+    vein: { name: '发现碎石矿脉', desc: '集中采石可获得 35 块碎石', action: '集中采石 · 5 体力', duration: 18 },
+  };
   const MATES = [
     { id: 'shao', name: '邵再贵', skill: '督工巡视', desc: '30秒进度+50%', unlock: 0,
       cost: { fund: 10 }, costText: '资金10', cd: 30,
       color: '#E9B94E', quote: '人在，路就在！', title: '红衣举锤 · 领头人' },
-    { id: 'he', name: '何国发', skill: '老书记的灯', desc: '体力全恢复', unlock: 1,
-      cost: {}, costText: '恩情无耗', cd: 45,
+    { id: 'he', name: '何国发', skill: '老书记的灯', desc: '恢复25体力与4人心', unlock: 1,
+      cost: {}, costText: '恩情无耗', cd: 90,
       color: '#F0A44E', quote: '灯不灭，人心不散。', title: '拄灯老者 · 主心骨' },
     { id: 'chen', name: '陈华全', skill: '精准爆破', desc: '免费起爆+20%', unlock: 2,
       cost: { diesel: 5 }, costText: '柴油5', cd: 40,
       color: '#E8743C', quote: '一炮一个准！', title: '背雷管 · 爆破手' },
-    { id: 'wang', name: '王庆保', skill: '动员会', desc: '20镐免体力', unlock: 2,
-      cost: { fund: 5 }, costText: '资金5', cd: 25,
+    { id: 'wang', name: '王庆保', skill: '动员会', desc: '6镐免体力并提振人心', unlock: 2,
+      cost: { fund: 8 }, costText: '资金8', cd: 60,
       color: '#6FA870', quote: '乡亲们，加把劲哟——', title: '拿喇叭 · 宣传员' },
   ];
   const SAFE_QUIZ = [
@@ -68,17 +78,23 @@ window.ShiyiGame = (function () {
   const HIRE_COST = 8;         // 召集一人工钱
   const WAGE_MS = 30000;       // 工钱周期
   const FOOD_CAP = 12;         // 口粮储存上限
-  const FOOD_MS = 15000;       // 后勤基础产粮周期
+  const FOOD_MS = 45000;       // 后勤基础产粮周期
+  const VIT_MS = 8000;         // 基础体力恢复：8 秒 1 点
+  const EVENT_FIRST_MS = 18000;
+  const EVENT_GAP_MS = 42000;
+  const TOOL_UPGRADES = [
+    { fund: 20, stone: 30 }, { fund: 45, stone: 70 }, { fund: 80, stone: 120 }
+  ];
   const SHARPEN_MS = 30000;    // 磨砺真实持续时间（按系统时间计算）
   const SHARPEN_MULT = 1.5;
   const SAVE_VERSION = 2;
   const SAVE_PREFIX = 'shiyi_game_save_v2_';
   const REWARD_PREFIX = 'shiyi_game_reward_v1_';
   const CREW_FX = {            // 四组职责说明（面板展示）
-    dig:  '凿岩组 · 每镐进度 +15%/人',
+    dig:  '凿岩组 · 每镐+15%/人，每秒自动施工',
     wall: '砌坎组 · 爆破推进 +8%/人',
     move: '运输组 · 掉率+5% 卖价+2元/人',
-    log:  '后勤组 · 回体加快 定期产粮 背篓饭+2/人',
+    log:  '后勤组 · 回体最低5秒/点，45秒产粮',
   };
 
   let G = null;
@@ -134,6 +150,12 @@ window.ShiyiGame = (function () {
     base.heart = asInt(saved.heart, 70, 0, 100);
     base.food = asInt(saved.food, 2, 0, FOOD_CAP);
     base.tool = asInt(saved.tool, 0, 0, TOOLS.length - 1);
+    base.role = ROLES.some(r => r.id === saved.role && base.ch >= r.unlock) ? saved.role : 'shao';
+    base.toolLevels = TOOLS.map((_, i) => asInt(saved.toolLevels && saved.toolLevels[i], 0, 0, 3));
+    base.eventIn = asInt(saved.eventIn, EVENT_FIRST_MS / 1000, 4, EVENT_GAP_MS / 1000);
+    if (saved.event && SITE_EVENTS[saved.event.type]) {
+      base.event = { type: saved.event.type, left: asInt(saved.event.left, 10, 1, SITE_EVENTS[saved.event.type].duration) };
+    }
     if (base.ch < TOOLS[base.tool].unlock) base.tool = 0;
     base.roster = asInt(saved.roster, 2, 2, ROSTER_CAP[base.ch]);
     const oldCrews = Array.isArray(saved.crews) ? saved.crews : [];
@@ -146,12 +168,12 @@ window.ShiyiGame = (function () {
       const cut = Math.min(base.crews[i].num, assigned - base.roster);
       base.crews[i].num -= cut; assigned -= cut;
     }
-    base.vitAcc = asNumber(saved.vitAcc, 0, 0, 1000);
+    base.vitAcc = asNumber(saved.vitAcc, 0, 0, VIT_MS);
     base.foodAcc = asNumber(saved.foodAcc, 0, 0, FOOD_MS * 2);
     base.wageAcc = asNumber(saved.wageAcc, 0, 0, WAGE_MS);
     base.wageDebt = asInt(saved.wageDebt, 0, 0, 10000000);
     base.slacking = base.wageDebt > 0;
-    base.freeHits = asInt(saved.freeHits, 0, 0, 20);
+    base.freeHits = asInt(saved.freeHits, 0, 0, 6);
     base.cds = {};
     MATES.forEach(m => {
       const until = activeUntil(saved.cds && saved.cds[m.id], now, m.cd * 1000);
@@ -171,6 +193,7 @@ window.ShiyiGame = (function () {
       version: SAVE_VERSION, savedAt: Date.now(),
       mileage: G.mileage, ch: G.ch, vit: G.vit, fund: G.fund, stone: G.stone,
       diesel: G.diesel, blast: G.blast, heart: G.heart, food: G.food, tool: G.tool,
+      role: G.role, toolLevels: G.toolLevels, eventIn: G.eventIn, event: G.event,
       roster: G.roster, crews: G.crews.map(c => ({ key: c.key, num: c.num })),
       vitAcc: G.vitAcc, foodAcc: G.foodAcc, wageAcc: G.wageAcc, wageDebt: G.wageDebt,
       freeHits: G.freeHits, cds: G.cds, sharpenUntil: G.sharpenUntil,
@@ -190,8 +213,7 @@ window.ShiyiGame = (function () {
   function rewardClaimed(owner) { return readStorage(scopedKey(REWARD_PREFIX, owner)) === '1'; }
   function claimReward(owner) {
     if (rewardClaimed(owner)) return false;
-    writeStorage(scopedKey(REWARD_PREFIX, owner), '1');
-    return true;
+    return writeStorage(scopedKey(REWARD_PREFIX, owner), '1');
   }
 
   /* 所有旧局回调都由 generation 失效，并实际取消浏览器任务。 */
@@ -238,7 +260,7 @@ window.ShiyiGame = (function () {
       cv, ctx: cv.getContext('2d'), W: 800, H: H0, dpr: 1, owner,
       mileage: 0, ch: 0, frame: 0,
       vit: 100, vitMax: 100, fund: 0, stone: 0, diesel: 0, blast: 0, heart: 70, food: 2,
-      tool: 0,
+      tool: 0, role: 'shao', toolLevels: [0, 0, 0], eventIn: EVENT_FIRST_MS / 1000, event: null, autoAcc: 0,
       roster: 2,                       // 在册工人（开局只有2人，需花工钱慢慢召集）
       crews: [
         { key: 'dig',  n: '凿岩', num: 2, cap: 3 },
@@ -470,7 +492,9 @@ window.ShiyiGame = (function () {
   }
 
   /* 怠工时工人效率折半 */
-  function crewEff() { return G.slacking ? 0.5 : 1; }
+  function crewEff() { return (G.slacking ? 0.5 : 1) * (0.55 + G.heart / 200); }
+  function currentRole() { return ROLES.find(r => r.id === G.role) || ROLES[0]; }
+  function toolMult(id) { return TOOLS[id].mult * (1 + (G.toolLevels[id] || 0) * .35); }
   function syncBuffs(now) {
     now = now || Date.now();
     if (G.sharpenUntil <= now) G.sharpenUntil = 0;
@@ -508,7 +532,9 @@ window.ShiyiGame = (function () {
     const eff = crewEff();
     const crowdPenalty = dig.num > dig.cap ? 0.5 : 1;
     const digBonus = 1 + dig.num * 0.15 * eff;
-    const gain = CHAPTERS[G.ch].hard * tool.mult * mult * G.buffMult * crowdPenalty * digBonus;
+    const rolePower = G.role === 'shao' ? 1.25 : 1;
+    const eventPower = G.event && G.event.type === 'danger' ? .7 : 1;
+    const gain = CHAPTERS[G.ch].hard * toolMult(G.tool) * mult * G.buffMult * crowdPenalty * digBonus * rolePower * eventPower;
     G.mileage = Math.min(3000, G.mileage + gain);
     if (G.freeHits > 0) G.freeHits--; else G.vit = Math.max(0, G.vit - total);
 
@@ -655,13 +681,37 @@ window.ShiyiGame = (function () {
       <button type="button" class="btn btn-ghost" style="width:100%;" onclick="ShiyiGame.close()">继续当前工程</button>`, 'reset');
   }
 
+  /* 带头人是持续被动，不是一次性技能；可按章节策略切换。 */
+  function role(id) {
+    if (actionLocked()) return;
+    const selected = ROLES.find(r => r.id === id);
+    if (!selected) return;
+    if (G.ch < selected.unlock) { msg(`${selected.name}将在后续章节加入`); return; }
+    if (G.role === id) { msg(`${selected.name}正在带队`); return; }
+    G.role = id;
+    msg(`已选择${selected.name}带队：${selected.desc}`);
+    renderPanels(); updateHUD();
+  }
+  function upgradeTool(id) {
+    if (actionLocked()) return;
+    const tool = TOOLS[Number(id)], level = G.toolLevels[id];
+    if (!tool || G.ch < tool.unlock || level >= 3) return;
+    const cost = TOOL_UPGRADES[level];
+    if (G.fund < cost.fund || G.stone < cost.stone) { msg(`升级需要资金 ${cost.fund} 元、碎石 ${cost.stone} 块`); return; }
+    G.fund -= cost.fund; G.stone -= cost.stone; G.toolLevels[id]++;
+    G.heart = Math.min(100, G.heart + 2);
+    msg(`${tool.name}升至 ${G.toolLevels[id]} 级，开凿倍率提升至 ×${toolMult(id).toFixed(2)}`);
+    addFloater('工具升级', G.W / 2, G.H * .35, '#FFD98A', 22);
+    renderPanels(); updateHUD();
+  }
+
   /* ================= 资源操作 ================= */
-  /* 背篓饭：消耗 1 口粮，基础 +10，后勤每人再 +2 */
+  /* 背篓饭：消耗 1 口粮，基础 +18，后勤每人再 +1 */
   function meal() {
     if (actionLocked()) return;
     if (G.food <= 0) { msg('没有口粮了，派工人到后勤组定期补给'); return; }
     if (G.vit >= G.vitMax) { msg('体力已满，先留着这份口粮'); return; }
-    const add = 10 + G.crews[3].num * 2;
+    const add = 18 + G.crews[3].num + (G.role === 'he' ? 6 : 0);
     G.food--;
     G.vit = Math.min(G.vitMax, G.vit + add);
     msg(`消耗 1 份口粮，+${add} 体力`);
@@ -671,7 +721,7 @@ window.ShiyiGame = (function () {
   function sell() {
     if (actionLocked()) return;
     if (G.stone < 50) { msg('碎石还不够 50 块'); return; }
-    const price = 15 + G.crews[2].num * 2;
+    const price = Math.round((15 + G.crews[2].num * 2) * (G.role === 'wang' ? 1.1 : 1));
     G.stone -= 50; G.fund += price;
     msg(`碎石卖给水泥厂，+${price} 元`);
     payWages(0);
@@ -762,9 +812,12 @@ window.ShiyiGame = (function () {
       G.shaoUntil = now + 30000; syncBuffs(now);
       msg('邵再贵督工：30 秒开凿 +50%');
       later(() => syncBuffs(), 30000);
-    } else if (id === 'he') { G.vit = G.vitMax; msg('老书记的灯：体力回满'); }
+    } else if (id === 'he') {
+      G.vit = Math.min(G.vitMax, G.vit + 25); G.heart = Math.min(100, G.heart + 4);
+      msg('老书记的灯：恢复 25 体力与 4 人心');
+    }
     else if (id === 'chen') { doBlast(true, 1.2); }
-    else if (id === 'wang') { G.freeHits = 20; G.heart = Math.min(100, G.heart + 5); msg('动员会：20镐免体力'); }
+    else if (id === 'wang') { G.freeHits = 6; G.heart = Math.min(100, G.heart + 8); msg('动员会：6 镐免体力，人心 +8'); }
     renderPanels(); updateHUD();
   }
 
@@ -846,7 +899,56 @@ window.ShiyiGame = (function () {
   }
   function msg(t) { const el = document.getElementById('gameMsg'); if (el) el.textContent = t; }
 
+  /* ================= 工地事件：限时交互与失误恢复 ================= */
+  function spawnEvent() {
+    const pool = G.ch >= 2 ? ['danger', 'supply', 'vein'] : ['danger', 'supply'];
+    const type = pool[Math.floor(Math.random() * pool.length)];
+    G.event = { type, left: SITE_EVENTS[type].duration };
+    G.eventIn = EVENT_GAP_MS / 1000;
+    msg(`工地事件：${SITE_EVENTS[type].name}，请及时处理`);
+  }
+  function resolveEvent() {
+    if (actionLocked() || !G.event) return;
+    const type = G.event.type;
+    if (type === 'danger') {
+      if (G.vit < 8) { msg('排险需要 8 点体力，先进食或等待恢复'); return; }
+      G.vit -= 8; G.stone += 15; G.heart = Math.min(100, G.heart + 3);
+      msg('危岩已排除：碎石 +15，人心 +3');
+    } else if (type === 'supply') {
+      G.food = Math.min(FOOD_CAP, G.food + 2); G.diesel += 5;
+      G.heart = Math.min(100, G.heart + 5); msg('收到乡亲补给：口粮 +2、柴油 +5、人心 +5');
+    } else if (type === 'vein') {
+      if (G.vit < 5) { msg('集中采石需要 5 点体力'); return; }
+      G.vit -= 5; G.stone += 35; msg('矿脉采掘完成：碎石 +35');
+    }
+    G.event = null; G.eventIn = EVENT_GAP_MS / 1000;
+    renderPanels(); updateHUD();
+  }
+  function expireEvent() {
+    if (!G.event) return;
+    if (G.event.type === 'danger') {
+      const start = G.ch ? CHAPTERS[G.ch - 1].end : 0;
+      const loss = Math.min(25, Math.max(0, G.mileage - start));
+      G.mileage -= loss; G.vit = Math.max(0, G.vit - 8); G.heart = Math.max(0, G.heart - 12);
+      msg(`危岩塌落：损失 ${Math.round(loss)} 米进度、8 体力与 12 人心。调整班组后可继续施工。`);
+      G.shake = 12; spawnChunks(faceX(), G.H * .6, 12);
+    } else msg('补给已经撤离，留意下一次工地事件。');
+    G.event = null; G.eventIn = EVENT_GAP_MS / 1000;
+    renderPanels();
+  }
+
   /* ================= HUD 与面板 ================= */
+  function renderEvent() {
+    const host = document.getElementById('siteEvent');
+    if (!host || !G) return;
+    const type = G.event ? G.event.type : '';
+    if (host.dataset.event !== type) {
+      host.dataset.event = type;
+      host.innerHTML = G.event ? `<div class="site-event"><div><b>${SITE_EVENTS[type].name} · <span id="eventLeft">${G.event.left}</span>s</b><small>${SITE_EVENTS[type].desc}</small></div><button type="button" class="btn btn-gold" onclick="ShiyiGame.resolveEvent()">${SITE_EVENTS[type].action}</button></div>` : `<div class="vit-regen-note">工地巡查中 · 下次事件约 <span id="eventNext">${G.eventIn}</span> 秒后 · 体力基础恢复 8 秒/点</div>`;
+    }
+    const left = document.getElementById('eventLeft'); if (left && G.event) left.textContent = G.event.left;
+    const next = document.getElementById('eventNext'); if (next && !G.event) next.textContent = G.eventIn;
+  }
   function updateHUD() {
     if (!G) return;
     syncBuffs();
@@ -863,12 +965,13 @@ window.ShiyiGame = (function () {
     set('blastNum', G.blast);
     set('foodNum', G.food);
     set('gameChapterName', CHAPTERS[G.ch].name);
+    renderEvent();
     const wageLeft = Math.max(0, Math.ceil((WAGE_MS - G.wageAcc) / 1000));
     set('gameWageText', G.won ? '工程已贯通' : G.chapterAwaiting ? '等待进入下一章' :
       G.wageDebt > 0 ? `欠饷 ${G.wageDebt} 元 · ${wageLeft} 秒后再结算` : `${wageLeft} 秒后结算工钱 · 本期 ${G.roster} 元`);
     const mealBtn = document.getElementById('mealBtn');
     if (mealBtn) {
-      const add = 10 + G.crews[3].num * 2;
+      const add = 18 + G.crews[3].num + (G.role === 'he' ? 6 : 0);
       mealBtn.textContent = `背篓饭 +${add}力（剩${G.food}）`;
       mealBtn.disabled = G.won || G.chapterAwaiting || G.food <= 0 || G.vit >= G.vitMax;
     }
@@ -879,13 +982,19 @@ window.ShiyiGame = (function () {
     const now = Date.now();
     syncBuffs(now);
     const sharpLeft = Math.max(0, Math.ceil((G.sharpenUntil - now) / 1000));
+    const rr = document.getElementById('roleRow');
+    if (rr) rr.innerHTML = ROLES.map(r => {
+      const locked = G.ch < r.unlock;
+      return `<button type="button" class="role-card ${G.role === r.id ? 'on' : ''}" onclick="ShiyiGame.role('${r.id}')" aria-pressed="${G.role === r.id}" ${locked ? 'disabled' : ''}>${mateSVG(r.id, locked)}<span><b>${r.name} · ${r.title}</b><small>${locked ? '第二章解锁' : r.desc}</small></span></button>`;
+    }).join('');
     const tr = document.getElementById('toolRow');
     if (tr) tr.innerHTML = TOOLS.map(t => {
       const locked = G.ch < t.unlock;
-      return `
-      <button type="button" class="tool ${G.tool === t.id ? 'on' : ''} ${locked ? 'locked' : ''}" onclick="ShiyiGame.tool(${t.id})" aria-pressed="${G.tool === t.id}" aria-label="${t.name}，进度倍率${t.mult}" ${locked ? 'disabled' : ''}>
-        <span class="tool-ic">${t.icon}</span><span class="note">${t.name} ×${t.mult}</span>
-      </button>`;
+      const level = G.toolLevels[t.id] || 0, cost = TOOL_UPGRADES[level];
+      return `<div class="tool-slot">
+      <button type="button" class="tool ${G.tool === t.id ? 'on' : ''} ${locked ? 'locked' : ''}" onclick="ShiyiGame.tool(${t.id})" aria-pressed="${G.tool === t.id}" aria-label="${t.name}，${level}级，进度倍率${toolMult(t.id).toFixed(2)}" ${locked ? 'disabled' : ''}>
+        <span class="tool-ic">${t.icon}</span><span class="note">${t.name} ${level}级 · ×${toolMult(t.id).toFixed(2)}</span>
+      </button><button type="button" class="tool-upgrade" onclick="ShiyiGame.upgradeTool(${t.id})" ${locked || level >= 3 ? 'disabled' : ''}>${level >= 3 ? '已升至满级' : `升级：${cost.fund}元＋${cost.stone}碎石`}</button></div>`;
     }).join('') +
       `<button type="button" class="tool" onclick="ShiyiGame.buyDiesel()"><span class="tool-ic">油</span><span class="note">买柴油 5元</span></button>` +
       `<button type="button" class="tool ${sharpLeft > 0 ? 'on' : ''}" onclick="ShiyiGame.sharpen()" aria-label="磨砺工具，30秒开凿1.5倍"><span class="tool-ic">砺</span><span class="note">${sharpLeft > 0 ? `磨砺 ×${SHARPEN_MULT} · 剩${sharpLeft}s` : `磨砺5元 · 30s ×${SHARPEN_MULT}`}</span></button>`;
@@ -1014,15 +1123,34 @@ window.ShiyiGame = (function () {
     payWages(0);
     const logN = G.crews[3].num;
     const eff = crewEff();
-    // 后勤组产出：体力恢复间隔随后勤人数缩短（1秒→最短0.35秒）
-    const interval = Math.max(350, 1000 - logN * 130 * eff);
+    // 基础 8 秒恢复 1 点；后勤与何国发最多缩短到 5 秒，不再无限秒回。
+    const roleRecovery = G.role === 'he' ? 1000 : 0;
+    const interval = Math.max(5000, VIT_MS - logN * 500 * eff - roleRecovery);
     G.vitAcc += 1000;
     while (G.vitAcc >= interval && G.vit < G.vitMax) { G.vit++; G.vitAcc -= interval; }
-    if (G.vitAcc > interval) G.vitAcc = interval;
+    if (G.vit >= G.vitMax) G.vitAcc = 0;
+    else if (G.vitAcc > interval) G.vitAcc = interval;
+
+    // 凿岩组自动施工：主动点击仍有价值，但排班与欠薪会真实影响推进。
+    const dig = G.crews[0];
+    if (dig.num > 0) {
+      const roleAuto = G.role === 'wang' ? 1.35 : G.role === 'shao' ? .9 : 1;
+      const autoGain = CHAPTERS[G.ch].hard * dig.num * .22 * eff * roleAuto * (G.event && G.event.type === 'danger' ? .5 : 1);
+      G.mileage = Math.min(3000, G.mileage + autoGain);
+      G.autoAcc = (G.autoAcc || 0) + autoGain;
+      if (G.autoAcc >= 12) { G.autoAcc -= 12; if (Math.random() < .35 + G.crews[2].num * .04) G.stone++; }
+      checkChapter();
+    }
+
+    // 限时工地事件；后台或其他弹层开启时暂停，避免无反馈受罚。
+    if (!G.chapterAwaiting && !G.won) {
+      if (G.event) { G.event.left--; if (G.event.left <= 0) expireEvent(); }
+      else { G.eventIn--; if (G.eventIn <= 0) spawnEvent(); }
+    }
 
     // 后勤定期生产口粮；怠工减产，库存封顶，无人后勤时不空累计。
     if (logN > 0 && G.food < FOOD_CAP) {
-      const foodInterval = Math.max(5000, FOOD_MS - logN * 750) / eff;
+      const foodInterval = Math.max(25000, FOOD_MS - logN * 2000) / eff;
       G.foodAcc += 1000;
       while (G.foodAcc >= foodInterval && G.food < FOOD_CAP) {
         G.foodAcc -= foodInterval;
@@ -1990,5 +2118,5 @@ window.ShiyiGame = (function () {
   }
 
   /* ================= 导出 ================= */
-  return { init, hit, meal, sell, buyDiesel, sharpen, crew, recruit, useMate, blast, quiz, next, restart, resetConfirm, close: () => closeModal(false), tool };
+  return { init, hit, meal, sell, buyDiesel, sharpen, crew, recruit, useMate, blast, quiz, next, restart, resetConfirm, role, upgradeTool, resolveEvent, close: () => closeModal(false), tool };
 })();

@@ -22,6 +22,7 @@ window.ShiyiAuth = (function () {
   }
 
   let me = null;          // 当前登录档案：{ uid, email, nickname, score, badges, quiz, stamps }
+  let sessionVersion = 0; // 使账号切换前发出的异步请求失效
   let pendingReg = null;  // 注册第一步暂存：{ email, password, nickname, verificationId, isExistingUser }
   const listeners = [];
 
@@ -54,8 +55,10 @@ window.ShiyiAuth = (function () {
   /* 登录成功后引导：装载档案并广播 */
   async function bootstrap(session) {
     const user = session && session.user;
-    if (!user) return;
+    if (!user) return false;
+    const version = ++sessionVersion;
     const p = await loadProfile(user);
+    if (version !== sessionVersion) return false;
     me = {
       uid: user.id,
       email: user.email || '',
@@ -66,15 +69,19 @@ window.ShiyiAuth = (function () {
       stamps: p.stamps && Array.isArray(p.stamps.ids) ? p.stamps : { ids: [], dates: {} },
     };
     notify();
+    return true;
   }
 
   /* 给当前用户加政绩值（云端原子累加） */
   async function addScore(n) {
     if (!me || !cloud) return;
+    const profile = me, uid = me.uid;
     try {
       const { data, error } = await cloud.database.rpc('increment_score', { delta: n });
+      if (me !== profile || !me || me.uid !== uid) return;
       me.score = (!error && typeof data === 'number') ? data : (me.score || 0) + n;
     } catch (e) {
+      if (me !== profile || !me || me.uid !== uid) return;
       me.score = (me.score || 0) + n;
     }
     notify();
@@ -83,10 +90,12 @@ window.ShiyiAuth = (function () {
   /* 更新本人档案字段（quiz / stamps / badges 等），返回是否成功 */
   async function saveFields(fields) {
     if (!me || !cloud) return false;
+    const profile = me, uid = me.uid;
     try {
-      const { data, error } = await cloud.database.from('profiles').update(fields).eq('owner_id', me.uid).select();
+      const { data, error } = await cloud.database.from('profiles').update(fields).eq('owner_id', uid).select();
       const rows = Array.isArray(data) ? data : [];
       if (error || rows.length === 0) return false;   // 行不存在或非本人（RLS 拦截）
+      if (me !== profile || !me || me.uid !== uid) return false;
       Object.assign(me, fields);
       notify();
       return true;
@@ -163,9 +172,11 @@ window.ShiyiAuth = (function () {
   }
 
   async function logout() {
-    if (cloud) { try { await cloud.auth.signOut(); } catch (e) { /* 忽略退出异常 */ } }
+    sessionVersion++;
     me = null;
+    pendingReg = null;
     notify();
+    if (cloud) { try { await cloud.auth.signOut(); } catch (e) { /* 忽略退出异常 */ } }
   }
 
   /* ================= 会话恢复与初始化 ================= */
@@ -177,7 +188,7 @@ window.ShiyiAuth = (function () {
       if (session) await bootstrap(session);
     } catch (e) { /* 网络异常保持游客态 */ }
     cloud.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT') { me = null; notify(); }
+      if (event === 'SIGNED_OUT') { sessionVersion++; me = null; pendingReg = null; notify(); }
       else if (session && (!me || me.uid !== session.user.id)) {
         bootstrap(session).catch(() => { /* 档案装载失败保持当前态 */ });
       }

@@ -5,7 +5,7 @@
   const UI = window.ShiyiUI;
   const esc = UI ? UI.esc : String;
   const validIds = new Set(D.spots.map(s => s.id));
-  let inited = false;
+  let inited = false, viewOwner = null;
   function key() { const me = window.ShiyiAuth && ShiyiAuth.current(); return 'shiyi_stamps_' + (me ? me.uid : 'guest'); }
   function normalize(raw) {
     const ids = Array.isArray(raw && raw.ids) ? [...new Set(raw.ids.map(Number).filter(id => validIds.has(id)))] : [];
@@ -20,16 +20,21 @@
 
   window.openCheckin = function (selectedId) {
     if (!inited) { buildDom(); inited = true; }
+    renderOwner(); openLayer(document.getElementById('ftCheckin'));
+    if (validIds.has(Number(selectedId))) setTimeout(() => { const card = document.getElementById('stampCard' + selectedId); if (card) { card.scrollIntoView({ block: 'center' }); card.focus({ preventScroll: true }); } }, 60);
+  };
+  function renderOwner() {
+    viewOwner = key();
     const me = window.ShiyiAuth && ShiyiAuth.current && ShiyiAuth.current();
     let local = load();
     if (me && me.stamps) {
       const cloud = normalize(me.stamps);
       local = normalize({ ids: [...local.ids, ...cloud.ids], dates: { ...cloud.dates, ...local.dates } });
       save(local);
+      if (JSON.stringify(local) !== JSON.stringify(cloud)) ShiyiAuth.saveFields({ stamps: local });
     }
-    renderAll(); openLayer(document.getElementById('ftCheckin'));
-    if (validIds.has(Number(selectedId))) setTimeout(() => { const card = document.getElementById('stampCard' + selectedId); if (card) { card.scrollIntoView({ block: 'center' }); card.focus({ preventScroll: true }); } }, 60);
-  };
+    renderAll();
+  }
   window.closeCheckin = function () { closeLayer(document.getElementById('ftCheckin')); };
   function buildDom() {
     document.body.insertAdjacentHTML('beforeend', `
@@ -69,4 +74,12 @@
     if (UI) UI.toast(s.ids.length === D.spots.length ? '六章集齐，云上见证徽章已解锁！' : '盖章成功，进度已保存');
     if (window.ShiyiProfileRefresh) ShiyiProfileRefresh();
   };
+  if (window.ShiyiAuth && typeof ShiyiAuth.onChange === 'function') {
+    ShiyiAuth.onChange(() => {
+      const layer = document.getElementById('ftCheckin');
+      if (!inited || !layer.classList.contains('on') || viewOwner === key()) return;
+      renderOwner();
+      const close = layer.querySelector('.ft-close'); if (close) close.focus({ preventScroll: true });
+    });
+  }
 })();

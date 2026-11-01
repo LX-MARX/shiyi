@@ -745,10 +745,10 @@ button:disabled { cursor: not-allowed; opacity: .5; transform: none !important; 
 .q-slide h2 { margin-top: 5px; color: var(--red-deep); font: 700 34px var(--font-serif); letter-spacing: 7px; }
 .q-slide p { max-width: 650px; min-height: 48px; margin: 12px auto 2px; color: var(--ink-soft); font-size: 14px; line-height: 1.85; }
 .q-controls { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 16px; }
-.q-dots { display: flex; gap: 7px; }
-.q-dot { width: 22px; height: 22px; padding: 0; border: 0; background: transparent; position: relative; }
-.q-dot::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 5px; background: #C9C0AE; left: 7px; top: 7px; transition: .2s; }
-.q-dot.on::after { width: 20px; left: 1px; background: var(--red); }
+.q-dots { display: flex; gap: 2px; }
+.q-dot { width: 32px; height: 32px; padding: 0; border: 0; background: transparent; position: relative; }
+.q-dot::after { content: ''; position: absolute; width: 7px; height: 7px; border-radius: 5px; background: #C9C0AE; left: 12px; top: 12px; transition: .2s; }
+.q-dot.on::after { width: 20px; left: 6px; background: var(--red); }
 .q-arrow { width: 34px; height: 34px; border: 1px solid rgba(166,124,46,.35); border-radius: 50%; background: var(--gold-soft); color: var(--red-deep); }
 .q-pause { border: 0; background: none; color: var(--ink-soft); font-size: 12px; padding: 8px; }
 .qa-head { width: 100%; border: 0; background: transparent; color: var(--ink); text-align: left; font: inherit; }

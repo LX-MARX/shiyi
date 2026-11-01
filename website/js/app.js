@@ -54,6 +54,14 @@
     if (t) go(t.dataset.page);
   });
   window.addEventListener('hashchange', () => go(location.hash.slice(1), true));
+  document.querySelector('.skip-link').addEventListener('click', event => {
+    event.preventDefault();
+    const main = document.querySelector('.page.on');
+    if (main) {
+      main.scrollIntoView({ behavior: 'auto', block: 'start' });
+      main.focus({ preventScroll: true });
+    }
+  });
 
   /* 首页五问：自动播放可暂停，鼠标悬停/键盘聚焦/后台页面均停止。 */
   const SHORT = ['为谁树', '靠谁树', '干多久', '树什么', '政绩界'];
@@ -86,7 +94,7 @@
     if (move) qIdx = (qIdx + Number(move.dataset.qmove) + five.length) % five.length;
     else if (dot) qIdx = Number(dot.dataset.qdot);
     else if (e.target.closest('[data-qpause]')) { qPaused = !qPaused; qSchedule(); }
-    else if (e.target.closest('[data-qalink]')) { go('spirit'); setTimeout(() => { const el = $('qa' + qIdx); if (el) { el.classList.add('open'); el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } }, 80); return; }
+    else if (e.target.closest('[data-qalink]')) { go('spirit'); setTimeout(() => { const el = $('qa' + qIdx); if (el) { el.classList.add('open'); el.querySelector('.qa-head').setAttribute('aria-expanded', 'true'); el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'center' }); } }, 80); return; }
     else return;
     renderQ();
   });
@@ -105,7 +113,8 @@
   $('statsGrid').innerHTML = stats.map(s => `<article class="card stat-card"><div class="stat-label">${s.label}</div><div class="stat-before">昔日 ${s.before}</div><div class="stat-after">${s.after}</div><div class="stat-note">${s.note}</div></article>`).join('');
 
   const entries = [
-    { icon: '凿', name: '重走大岩路', desc: '亲手抡镐凿岩，三年凿出五米宽、三公里的绝壁生路', act: "go('game')", feat: true },
+    { icon: '答', name: '好样子答题闯关', desc: '三大篇章九道关卡，限时连击与星级收集', act: 'openChallenge()', feat: true },
+    { icon: '凿', name: '重走大岩路', desc: '亲手抡镐凿岩，三年凿出五米宽、三公里的绝壁生路', act: "go('game')" },
     { icon: '问', name: '政绩观五问', desc: '五问五答', act: "go('spirit')" },
     { icon: '谱', name: '接力村史', desc: '七任书记', act: "go('history')" },
     { icon: '游', name: '看石椅', desc: '六大点位', act: "go('tour')" },
@@ -126,20 +135,30 @@
   $('routeFlow').innerHTML = route.map((r, i) => `<span class="res-chip">${r}</span>${i < route.length - 1 ? '<span class="route-arrow" aria-hidden="true">→</span>' : ''}`).join('');
 
   function progressKey() { const me = window.ShiyiAuth && ShiyiAuth.current(); return 'shiyi_progress_' + (me ? me.uid : 'guest'); }
-  function getProgress() { return Object.assign({ visits: {}, gameWin: false }, safeJSON(progressKey(), {})); }
+  function getProgress() {
+    const raw = safeJSON(progressKey(), {});
+    return {
+      visits: raw && raw.visits && typeof raw.visits === 'object' && !Array.isArray(raw.visits) ? raw.visits : {},
+      gameWin: !!(raw && raw.gameWin),
+    };
+  }
   function markVisit(page) { const p = getProgress(); if (!p.visits[page]) { p.visits[page] = true; safeStore(progressKey(), p); renderProfile(); } }
   window.ShiyiMarkGameWin = () => { const p = getProgress(); p.gameWin = true; safeStore(progressKey(), p); renderProfile(); };
   function renderProfile() {
     const me = window.ShiyiAuth && ShiyiAuth.current();
-    const score = me ? Number(me.score || 0) : Number(localStorage.getItem('shiyi_score') || 0);
-    const stamps = me && me.stamps ? me.stamps.ids.length : safeJSON('shiyi_stamps_guest', safeJSON('shiyi_stamps_v1', { ids: [] })).ids.length;
-    const quizDone = me ? !!me.quiz : !!(safeJSON('shiyi_quiz_guest', null) || localStorage.getItem('shiyi_quiz_v1'));
+    const score = me ? Number(me.score || 0) : Number(safeJSON('shiyi_score', 0) || 0);
+    const stampData = me && me.stamps ? me.stamps : safeJSON('shiyi_stamps_guest', safeJSON('shiyi_stamps_v1', { ids: [] }));
+    const stamps = stampData && Array.isArray(stampData.ids) ? new Set(stampData.ids.map(Number).filter(id => D.spots.some(s => s.id === id))).size : 0;
+    const quizDone = me ? !!me.quiz : !!(safeJSON('shiyi_quiz_result_guest', null) || safeJSON('shiyi_quiz_v1', null));
+    const challenge = safeJSON('shiyi_challenge_v1_' + (me ? me.uid : 'guest'), { clears: {} });
+    const challengeDone = [1,2,3,4,5,6,7,8,9].every(id => challenge.clears && challenge.clears[id]);
     const p = getProgress();
     $('scoreNum').textContent = Number.isFinite(score) ? score : 0;
     const badges = [
       { ic: '读', n: '读完村史', on: !!p.visits.history }, { ic: '问', n: '五问五答', on: !!p.visits.spirit },
       { ic: '凿', n: '凿通大岩路', on: !!p.gameWin }, { ic: '章', n: '云上见证', on: stamps >= D.spots.length },
-      { ic: '测', n: '政绩测评', on: quizDone }, { ic: '游', n: '云游石椅', on: !!p.visits.tour },
+      { ic: '测', n: '政绩测评', on: quizDone }, { ic: '答', n: '答题达人', on: challengeDone },
+      { ic: '游', n: '云游石椅', on: !!p.visits.tour },
     ];
     $('badgeGrid').innerHTML = badges.map(b => `<div class="badge ${b.on ? '' : 'dim'}"><div class="ic">${b.ic}</div><div class="bn">${b.n}</div><div class="badge-state">${b.on ? '已获得' : '待解锁'}</div></div>`).join('');
   }
@@ -153,7 +172,7 @@
     if (e.key === 'Escape') {
       const top = document.querySelector('.ft-overlay.on') || document.querySelector('#modalMask.on') || document.querySelector('#authMask.on');
       if (!top) return;
-      if (top.id === 'ftPoster') closePoster(); else if (top.id === 'ftCheckin') closeCheckin(); else if (top.id === 'ftQuiz') closeQuiz(); else if (top.id === 'authMask') ShiyiAuth.hide(); else closeModal();
+      if (top.id === 'ftPoster') closePoster(); else if (top.id === 'ftCheckin') closeCheckin(); else if (top.id === 'ftQuiz') closeQuiz(); else if (top.id === 'ftChallenge') closeChallenge(); else if (top.id === 'authMask') ShiyiAuth.hide(); else closeModal();
     }
     if (e.key === 'Tab') {
       const layer = document.querySelector('.ft-overlay.on,.modal-mask.on');
