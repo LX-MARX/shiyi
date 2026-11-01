@@ -238,3 +238,39 @@
 .nav-name { color: #FFF; font-size: 14px; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nav-role { font-size: 11px; color: #F7EEDC; background: rgba(255,255,255,.18); border-radius: 10px; padding: 2px 8px; }
 .nav-role-admin { background: var(--gold, #C9A254); color: #5A3A12; font-weight: 600; }
+
+/* 2026 功能质量升级：语义按钮、焦点与移动端 */
+.quote-item,.tpl-card,.stamp-card { display: block; width: 100%; text-align: left; font: inherit; }
+.quote-text,.quote-meta,.stamp-bd,.stamp-name,.stamp-ol,.stamp-state,.tpl-preview,.tpl-name { display: flex; }
+.stamp-bd,.quote-item { flex-direction: column; }
+.tpl-preview { align-items: center; justify-content: center; }
+.tpl-name { justify-content: center; }
+#posterTagRow .res-chip { cursor: pointer; background: #FFFDF7; }
+#posterTagRow .res-chip.on { background: var(--red); color: #FFF; border-color: var(--red); }
+.quiz-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.quiz-scene:focus { outline: none; }
+.nav-user-btn { padding: 0; background: transparent; border: 0; }
+.ft-overlay { padding-top: env(safe-area-inset-top); }
+.ft-head { height: auto; min-height: 60px; padding-top: 8px; padding-bottom: 8px; }
+.ft-close { min-width: 44px; min-height: 44px; }
+button:focus-visible { outline: 3px solid #C9A254; outline-offset: 3px; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+@media (max-width: 640px) {
+  .ft-body { padding: 18px 14px 80px; }
+  .ft-head-sub { font-size: 11px; letter-spacing: 0; }
+  .ft-head-title { font-size: 16px; }
+  .poster-stage { position: static; }
+  #posterCanvas { width: min(100%,320px); height: auto; }
+  .poster-actions .btn { flex: 1; padding-left: 10px; padding-right: 10px; }
+  .stamp-grid { grid-template-columns: 1fr; }
+  .quiz-card,.quiz-intro { padding: 22px 18px; }
+  .quiz-scene { font-size: 17px; }
+  .quiz-opt { padding: 15px; }
+  .dim-name { width: 76px; font-size: 13px; }
+  .dim-row { gap: 8px; }
+  .dim-val { width: 26px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ft-overlay,.quiz-card,.stamp-card.stamped .stamp-seal,.stamp-card.shake { animation: none; }
+  .quote-item,.tpl-card,.stamp-card,.quiz-opt { transition: none; }
+}
